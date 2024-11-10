@@ -1,18 +1,15 @@
+// backend/index.js
 const express = require('express');
 const cors = require('cors');
+
 const app = express();
+app.use(cors());
 
-// Middleware
-app.use(cors()); // Permitir solicitudes desde el frontend
-app.use(express.json()); // Parsear JSON en las peticiones
-
-// Rutas de prueba
-app.get('/api/saludo', (req, res) => {
-    res.json({ mensaje: 'Hola desde el backend!' });
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Conexión exitosa con el backend!' });
 });
 
-// Configuración del puerto
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 app.listen(PORT, () => {
-    console.log(`Servidor escuchando en el puerto ${PORT}`);
+  console.log(`Backend funcionando en http://localhost:${PORT}`);
 });

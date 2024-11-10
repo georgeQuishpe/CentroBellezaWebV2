@@ -1,0 +1,77 @@
+/* Estilo compartido para el Login, Signup y ForgotPassword */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f5f5f5;
+  }
+  
+  .auth-container {
+    width: 400px;
+    max-width: 400px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  button {
+    padding: 10px;
+    font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #218838;
+  }
+  
+  .auth-links {
+    margin-top: 15px;
+  }
+  
+  .auth-links a {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+    margin-right: 20px;
+  }
+
+  .auth-links a:last-child {
+    margin-right: 0; /* Elimina el margen derecho en el último link */
+  }
+  
+  .auth-links a:hover {
+    text-decoration: underline;
+  }
+  
