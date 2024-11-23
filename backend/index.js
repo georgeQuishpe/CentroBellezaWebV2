@@ -1,15 +1,24 @@
 // backend/index.js
 const express = require('express');
+const dotenv = require('dotenv');
 const cors = require('cors');
 
-const app = express();
-app.use(cors());
 
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'Conexión exitosa con el backend!' });
+dotenv.config();
+const app = express();
+
+const port = process.env.PORT || 5000;
+const routerApi = require('./routes');
+
+app.use(cors());
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.send('Conexión exitosa con el backend!');
 });
 
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`Backend funcionando en http://localhost:${PORT}`);
+routerApi(app);
+
+app.listen(port, () => {
+  console.log(`Backend funcionando en http://localhost:${port}`);
 });
