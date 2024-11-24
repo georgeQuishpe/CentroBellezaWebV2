@@ -1,5 +1,5 @@
-const UsersService = require('../services/users.service');
-const service = new UsersService();
+const AppointmentsService = require('../services/appointments.service');
+const service = new AppointmentsService();
 
 const get = async (req, res) => {
     try {
@@ -49,4 +49,3 @@ const remove = async (req, res) => {
 module.exports = {
     get, getById, create, update, remove, get
 };
-

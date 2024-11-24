@@ -1,5 +1,5 @@
-const UsersService = require('../services/users.service');
-const service = new UsersService();
+const ServicesService = require('../services/services.service');
+const service = new ServicesService();
 
 const get = async (req, res) => {
     try {
@@ -49,4 +49,3 @@ const remove = async (req, res) => {
 module.exports = {
     get, getById, create, update, remove, get
 };
-
