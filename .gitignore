@@ -28,3 +28,4 @@ dist/
 # Ignore lock files if you want to enforce consistency on package manager
 package-lock.json
 yarn.lock
+backend/.env

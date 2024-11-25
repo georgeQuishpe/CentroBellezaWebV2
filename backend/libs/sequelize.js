@@ -1,19 +1,21 @@
 const { Sequelize } = require('sequelize');
-
-// const { config } = require('../config/config');
 const setupModels = require('../db/models');
+require('dotenv').config(); 
 
-const conectionUrl = 'postgresql://peluqueriaweb_user:aZffbZQwqiizWrD7mYWLiSGDXlswJMDx@dpg-ct0vict2ng1s73e2pimg-a.oregon-postgres.render.com/peluqueriaweb';
-
-const sequelize = new Sequelize(conectionUrl, {
-    dialect: 'postgres',
+const sequelize = new Sequelize({
+    host: process.env.DB_HOST,           
+    username: process.env.DB_USER,      
+    password: process.env.DB_PASSWORD,   
+    database: process.env.DB_NAME,       
+    port: process.env.DB_PORT,           
+    dialect: 'postgres',                
     dialectOptions: {
         ssl: {
             require: true,
             rejectUnauthorized: false
         }
     }
-});
+  });
 
 sequelize.sync();      
 setupModels(sequelize);

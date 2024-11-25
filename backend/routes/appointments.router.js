@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const AppointmentsController = require('../controllers/appointment.controller');
+const appointmentsController = require('../controllers/appointment.controller');
 
 router
-    .get('/', AppointmentsController.get)
-    .get('/:id', AppointmentsController.getById)
-    .post('/', AppointmentsController.create)
-    .put('/:id', AppointmentsController.update)
-    .delete('/:id', AppointmentsController.remove);
+    .get('/', appointmentsController.get)
+    .get('/:id', appointmentsController.getById)
+    .post('/', appointmentsController.create)
+    .put('/:id', appointmentsController.update)
+    .delete('/:id', appointmentsController.remove);
 
 module.exports = router;
