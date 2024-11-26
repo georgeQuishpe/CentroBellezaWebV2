@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import io from 'socket.io-client'
 
-const SOCKET_SERVER_URL = 'http://localhost:5000'
+const SOCKET_SERVER_URL = 'http://https://peluqueriawebapi.onrender.com:5000'
 
 export const useWebSocket = (userId) => {
     const [messages, setMessages] = useState([])
