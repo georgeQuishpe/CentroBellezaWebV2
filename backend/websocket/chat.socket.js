@@ -90,5 +90,20 @@ module.exports = (io) => {
             console.log(`Usuario desconectado: ${userId}`);
             connectedUsers.delete(userId);
         });
+
+        // Al inicio del archivo:
+        socket.on('error', (error) => {
+            console.error('Socket error:', error);
+        });
+
+        // En la carga de mensajes:
+        service.findByUser(userId)
+            .then(messages => {
+                socket.emit('previousMessages', messages || []);
+            })
+            .catch(error => {
+                console.error('Error al cargar mensajes:', error);
+                socket.emit('previousMessages', []);
+            });
     });
 };

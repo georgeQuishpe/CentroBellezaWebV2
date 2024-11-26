@@ -9,9 +9,8 @@ export function ChatTest() {
     <div className="min-h-screen bg-gray-100 p-4">
       <h1 className="text-2xl font-bold mb-4">Prueba del Chat</h1>
 
-      <div className="bg-white rounded-lg p-4 shadow">
+      <div className="bg-white rounded-lg p-4 shadow mb-4">
         <p>Usuario ID: {userId}</p>
-        <p>Estado: Conectado</p>
       </div>
 
       <ChatProvider userId={userId}>

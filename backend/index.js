@@ -9,12 +9,16 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173", // URL de tu frontend en Vite
-    methods: ["GET", "POST"]
+    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+  credentials: true
+}));
 app.use(express.json());
 
 // Configuración de WebSocket

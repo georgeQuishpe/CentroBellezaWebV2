@@ -1,61 +1,82 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import io from "socket.io-client";
 
-const SOCKET_SERVER_URL = "http://localhost:5000"; // Ajusta esto según tu configuración
+const SOCKET_SERVER_URL = "http://localhost:5000";
 
 export const useWebSocket = (userId) => {
   const [messages, setMessages] = useState([]);
   const [connected, setConnected] = useState(false);
-  const socketRef = useRef();
+  const [error, setError] = useState(null);
+  const socketRef = useRef(null);
 
+  // Inicialización del socket
   useEffect(() => {
-    // Crear conexión socket
+    console.log("Iniciando conexión WebSocket...");
+
     socketRef.current = io(SOCKET_SERVER_URL, {
       query: { userId },
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
-    
-    // Conexión establecida
+
+    // Manejadores de eventos
     socketRef.current.on("connect", () => {
+      console.log("WebSocket conectado");
       setConnected(true);
-      console.log("Conectado al servidor de chat");
+      setError(null);
     });
 
-    // Recibir mensajes
     socketRef.current.on("message", (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+      console.log("Mensaje recibido:", message);
+      setMessages((prev) => [...prev, message]);
     });
 
-    // Cargar historial de mensajes
     socketRef.current.on("previousMessages", (previousMessages) => {
-      setMessages(previousMessages);
+      console.log("Mensajes previos:", previousMessages);
+      setMessages(previousMessages || []);
     });
 
-    // Manejar desconexión
     socketRef.current.on("disconnect", () => {
+      console.log("WebSocket desconectado");
       setConnected(false);
-      console.log("Desconectado del servidor de chat");
     });
 
-    // Cleanup al desmontar
+    socketRef.current.on("connect_error", (err) => {
+      console.error("Error de conexión:", err);
+      setError("Error de conexión");
+      setConnected(false);
+    });
+
+    // Limpieza
     return () => {
-      socketRef.current.disconnect();
+      console.log("Limpiando conexión WebSocket");
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
     };
-  }, [userId]);
+  }, [userId]); // Solo depende de userId
 
   // Función para enviar mensajes
-  const sendMessage = (content) => {
-    if (socketRef.current) {
-      socketRef.current.emit("sendMessage", {
-        content,
-        userId,
-        timestamp: new Date(),
-      });
-    }
-  };
+  const sendMessage = useCallback(
+    (content) => {
+      if (socketRef.current && connected) {
+        socketRef.current.emit("sendMessage", {
+          content,
+          userId,
+          timestamp: new Date(),
+        });
+      }
+    },
+    [connected, userId]
+  );
 
   return {
     connected,
     messages,
     sendMessage,
+    error,
   };
 };

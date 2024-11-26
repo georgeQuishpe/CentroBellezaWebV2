@@ -1,18 +1,17 @@
-// backend/services/chatMessages.service.js
 const { models } = require('../libs/sequelize');
 
 class ChatMessagesService {
     constructor() { }
 
     async find() {
-        const messages = await models.ChatMensajes.findAll({
+        const messages = await models.ChatMessage.findAll({
             order: [['fechaEnvio', 'ASC']]
         });
         return messages;
     }
 
     async findByUser(userId) {
-        const messages = await models.ChatMensajes.findAll({
+        const messages = await models.ChatMessage.findAll({
             where: { usuarioId: userId },
             order: [['fechaEnvio', 'ASC']]
         });
@@ -20,12 +19,12 @@ class ChatMessagesService {
     }
 
     async create(data) {
-        const newMessage = await models.ChatMensajes.create(data);
+        const newMessage = await models.ChatMessage.create(data);
         return newMessage;
     }
 
     async markAsRead(id) {
-        const message = await models.ChatMensajes.findByPk(id);
+        const message = await models.ChatMessage.findByPk(id);
         if (!message) {
             throw new Error('Mensaje no encontrado');
         }
