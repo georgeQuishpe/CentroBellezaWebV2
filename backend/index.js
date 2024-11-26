@@ -7,18 +7,28 @@ const routerApi = require('./routes');
 
 const app = express();
 const httpServer = createServer(app);
+
+const ALLOWED_ORIGINS = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  // Añadir tu dominio de producción cuando lo tengas
+];
+
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+    origin: ALLOWED_ORIGINS,
     methods: ["GET", "POST"],
     credentials: true
   }
 });
 
 app.use(cors({
-  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
-  credentials: true
+  origin: ALLOWED_ORIGINS,
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
+
 app.use(express.json());
 
 // Configuración de WebSocket

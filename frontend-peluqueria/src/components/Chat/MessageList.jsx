@@ -14,6 +14,19 @@ export function MessageList() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const formatTime = (timestamp) => {
+    const messageDate = moment(timestamp);
+    const now = moment();
+
+    if (messageDate.isSame(now, "day")) {
+      return messageDate.format("HH:mm"); // Solo hora para mensajes de hoy
+    } else if (messageDate.isSame(now.subtract(1, "day"), "day")) {
+      return "Ayer " + messageDate.format("HH:mm");
+    } else {
+      return messageDate.format("DD/MM/YYYY HH:mm"); // Fecha completa para otros días
+    }
+  };
+
   if (!messages || messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-500">
@@ -40,7 +53,7 @@ export function MessageList() {
           >
             <p className="text-sm">{message.mensaje}</p>
             <span className="text-xs mt-1 opacity-75 block">
-              {moment(message.fechaEnvio).fromNow()}
+              {formatTime(message.fechaEnvio)}
             </span>
           </div>
         </div>
