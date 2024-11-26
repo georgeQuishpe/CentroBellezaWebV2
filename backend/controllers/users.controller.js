@@ -19,6 +19,15 @@ const getById = async (req, res) => {
     }
 }
 
+const getByEmail = async (req, res) => {
+    try {
+        const response = await service.findByEmail(req.params.email);
+        res.json(response);
+    } catch (error) {
+        res.status(500).send({ success: false, message: error.message });
+    }
+}
+
 const create = async (req, res) => {
     try {
         const response = await service.create(req.body);
@@ -47,6 +56,6 @@ const remove = async (req, res) => {
 }
 
 module.exports = {
-    get, getById, create, update, remove, get
+    get, getById, getByEmail, create, update, remove
 };
 
