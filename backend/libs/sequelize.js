@@ -1,23 +1,23 @@
 const { Sequelize } = require('sequelize');
 const setupModels = require('../db/models');
-require('dotenv').config(); 
+require('dotenv').config();
 
 const sequelize = new Sequelize({
-    host: process.env.DB_HOST,           
-    username: process.env.DB_USER,      
-    password: process.env.DB_PASSWORD,   
-    database: process.env.DB_NAME,       
-    port: process.env.DB_PORT,           
-    dialect: 'postgres',                
+    host: process.env.DB_HOST,
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+    dialect: 'postgres',
     dialectOptions: {
         ssl: {
-            require: true,
+            require: false, //Antes era TRUE
             rejectUnauthorized: false
         }
     }
-  });
+});
 
-sequelize.sync();      
+sequelize.sync();
 setupModels(sequelize);
 
 module.exports = sequelize;
