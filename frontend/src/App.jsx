@@ -7,6 +7,7 @@ function App() {
       <Routes>
         <Route path="/chat-test" element={<ChatTest />} />
         <Route path="/admin-chat" element={<AdminChat />} />
+        
       </Routes>
     </Router>
   );
