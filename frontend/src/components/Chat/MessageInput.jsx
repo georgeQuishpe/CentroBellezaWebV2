@@ -27,7 +27,7 @@ export function MessageInput() {
       <button
         type="submit"
         disabled={!connected || !message.trim()}
-        className="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="bg-blue-500 text-white rounded-lg px-4 py-2 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
       >
         <PaperAirplaneIcon className="h-5 w-5" />
       </button>

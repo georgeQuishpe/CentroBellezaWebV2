@@ -4,7 +4,7 @@ import { useWebSocket } from "../hooks/useWebSocket";
 const ChatContext = createContext();
 
 export function ChatProvider({ children, userId }) {
-  const { connected, messages, sendMessage } = useWebSocket(userId);
+  const { connected, messages, sendMessage, error } = useWebSocket(userId);
   const [chatOpen, setChatOpen] = useState(false);
 
   const value = {
@@ -13,6 +13,7 @@ export function ChatProvider({ children, userId }) {
     sendMessage,
     chatOpen,
     setChatOpen,
+    error,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

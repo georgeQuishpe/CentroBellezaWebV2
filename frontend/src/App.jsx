@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ChatTest } from "./pages/ChatTest";
+import { AdminChat } from "./pages/AdminChat";
 
 function App() {
   return (
