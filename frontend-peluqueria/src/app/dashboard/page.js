@@ -8,11 +8,10 @@ export default function Dashboard() {
     const [services, setServices] = useState([]);
     const [user, setUser] = useState(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const { chatOpen, setChatOpen } = useChat(); // Ahora esto siempre funciona porque el ChatProvider ya está activo.
     const router = useRouter();
-    const { chatOpen, setChatOpen } = useChat();
 
     useEffect(() => {
-        // Verificar si el usuario está autenticado
         const storedUser = JSON.parse(localStorage.getItem("user"));
         if (!storedUser) {
             router.push("/login");
@@ -23,7 +22,6 @@ export default function Dashboard() {
     }, [router]);
 
     useEffect(() => {
-        // Obtener los servicios desde el backend
         const fetchServices = async () => {
             try {
                 const response = await fetch("http://localhost:5000/api/v1/services");
@@ -41,35 +39,10 @@ export default function Dashboard() {
         fetchServices();
     }, []);
 
-    const handleRoleChange = async (userId, newRole) => {
-        if (!isAdmin) return;
-        try {
-            const response = await fetch(
-                `http://localhost:5000/api/v1/users/${userId}/role`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ role: newRole }),
-                }
-            );
-            const data = await response.json();
-            if (response.ok) {
-                alert(`Rol actualizado a ${newRole}`);
-            } else {
-                console.error("Error al cambiar rol:", data.message);
-            }
-        } catch (error) {
-            console.error("Error en la solicitud:", error);
-        }
-    };
-
     return (
         <div className="min-h-screen bg-gray-100 p-4">
             <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
             <div className="flex flex-col lg:flex-row gap-6">
-                {/* Panel de Servicios */}
                 <div className="flex-1 bg-white p-4 rounded-lg shadow">
                     <h2 className="text-xl font-semibold mb-4">Servicios</h2>
                     <ul className="space-y-4">
@@ -94,45 +67,17 @@ export default function Dashboard() {
                         ))}
                     </ul>
                 </div>
-
-                {/* Panel de Configuración */}
-                {isAdmin && (
-                    <div className="w-full lg:w-1/3 bg-white p-4 rounded-lg shadow">
-                        <h2 className="text-xl font-semibold mb-4">Configuración</h2>
-                        <p className="mb-2">
-                            Bienvenido, administrador. Aquí puedes gestionar el sistema.
-                        </p>
-                        <ul className="space-y-2">
-                            <li>
-                                <button
-                                    className="text-blue-500 hover:underline"
-                                    onClick={() => handleRoleChange("some-user-id", "Admin")}
-                                >
-                                    Convertir usuario a Admin
-                                </button>
-                            </li>
-                            <li>
-                                <button className="text-blue-500 hover:underline">
-                                    Agregar nuevo servicio
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                )}
             </div>
 
-            {/* Chat */}
-            <div>
-                {!chatOpen && (
-                    <button
-                        className="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full p-3 shadow-lg hover:bg-blue-600"
-                        onClick={() => setChatOpen(true)}
-                    >
-                        Abrir Chat
-                    </button>
-                )}
-                {chatOpen && <ChatWindow />}
-            </div>
+            {!chatOpen && (
+                <button
+                    className="fixed bottom-4 right-4 bg-blue-500 text-white rounded-full p-3 shadow-lg hover:bg-blue-600"
+                    onClick={() => setChatOpen(true)}
+                >
+                    Abrir Chat
+                </button>
+            )}
+            {chatOpen && <ChatWindow />}
         </div>
     );
 }

@@ -1,3 +1,4 @@
+import { ChatProvider } from "../context/ChatContext";
 import './globals.css'
 
 export const metadata = {
@@ -9,8 +10,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="es">
       <body>
-        {children}
+        {/* Envuelve toda la aplicación con el ChatProvider */}
+        <ChatProvider userId="guest">
+          {children}
+        </ChatProvider>
       </body>
     </html>
-  )
+  );
 }
