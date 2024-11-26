@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../controllers/auth.controller'); // Importa el controlador
+const { signup, login, recoverPassword, resetPassword } = require('../controllers/auth.controller');
 
-router.post('/signup', authController.signup);
-router.post('/login', authController.login);
-router.post('/recover-password', authController.recoverPassword);
+// Rutas de autenticación
+router.post('/signup', signup);
+router.post('/login', login);
+router.post('/recover-password', recoverPassword);
+router.post('/reset-password', resetPassword);
 
 module.exports = router;

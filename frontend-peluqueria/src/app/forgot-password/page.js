@@ -25,23 +25,40 @@ export default function ForgotPasswordPage() {
                 body: JSON.stringify({ email }),
             })
 
-            const data = await response.json()
+            // Registrar la respuesta para depuración
+            console.log('Response status:', response.status);
+            const responseText = await response.text();
+            console.log('Response text:', responseText);
 
-            if (!response.ok) {
-                throw new Error(data.message || 'Error al procesar la solicitud')
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                throw new Error('Error en la respuesta del servidor');
             }
 
-            setMessage('Se ha enviado un código de recuperación a tu correo electrónico.')
+            if (!response.ok) {
+                throw new Error(data.message || 'Error al procesar la solicitud');
+            }
 
-            // Opcional: redirigir después de unos segundos
+            setMessage('Se ha enviado un código de recuperación a tu correo electrónico.');
+
+            // Almacenar el código temporalmente (solo para desarrollo)
+            if (data.code) {
+                localStorage.setItem('tempRecoveryCode', data.code);
+            }
+
+            // Redirigir después de mostrar el mensaje
             setTimeout(() => {
-                router.push('/login')
-            }, 3000)
+                router.push(`/reset-password?email=${encodeURIComponent(email)}`);
+            }, 2000);
 
         } catch (err) {
-            setError(err.message)
+            setError(err.message);
+            console.error('Error completo:', err);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
 
@@ -70,6 +87,7 @@ export default function ForgotPasswordPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            placeholder="ejemplo@correo.com"
                             required
                             disabled={loading}
                         />
@@ -81,7 +99,7 @@ export default function ForgotPasswordPage() {
                             }`}
                         disabled={loading}
                     >
-                        {loading ? 'Procesando...' : 'Enviar código de recuperación'}
+                        {loading ? 'Enviando...' : 'Enviar código de recuperación'}
                     </button>
                 </form>
 

@@ -22,11 +22,41 @@ const login = async (req, res) => {
 const recoverPassword = async (req, res) => {
     try {
         const { email } = req.body;
-        const verifactionCode = await service.sendPasswordRecovery(email);
-        res.status(200).json(verifactionCode);
+        const verificationCode = await service.sendPasswordRecovery(email);
+        res.status(200).json({
+            success: true,
+            message: 'Código de verificación enviado',
+            code: verificationCode
+        });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(400).json({ success: false, message: error.message });
     }
 };
 
-module.exports = { recoverPassword, signup, login };
+const resetPassword = async (req, res) => {
+    try {
+        console.log(req.body); // Verifica los datos enviados por el cliente
+        const { email, code, newPassword } = req.body;
+
+        if (!email || !code || !newPassword) {
+            throw new Error('Faltan campos requeridos');
+        }
+
+        await service.resetPassword(email, code, newPassword);
+        res.status(200).json({
+            success: true,
+            message: 'Contraseña actualizada exitosamente',
+        });
+    } catch (error) {
+        console.error(error.message); // Depuración de errores
+        res.status(400).json({ success: false, message: error.message });
+    }
+};
+
+
+module.exports = {
+    signup,
+    login,
+    recoverPassword,
+    resetPassword
+};

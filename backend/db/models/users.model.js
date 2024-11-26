@@ -61,8 +61,14 @@ const UserSchema = {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         field: 'estado'
-    }
+    },
+    verificationCode: {
+        type: DataTypes.STRING(10), // Código de longitud máxima 10
+        allowNull: true, // Puede ser nulo si no está en uso
+        field: 'verification_code' // Nombre del campo en la base de datos
+    },
+
 };
 
 
-module.exports = {User, UserSchema}
+module.exports = { User, UserSchema }
