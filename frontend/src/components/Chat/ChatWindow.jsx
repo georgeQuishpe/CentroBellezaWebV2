@@ -1,9 +1,11 @@
+"use client";
 import { useEffect, useRef } from "react";
 import { useChat } from "../../context/ChatContext";
 import { ChatHeader } from "./ChatHeader";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
-import { ChatBubbleLeftIcon } from "@heroicons/react/24/outline";
+import { ChatBubbleLeftIcon } from "@heroicons/react/24/solid"; // Importa desde la versión adecuada
+
 
 export function ChatWindow() {
   const { chatOpen, setChatOpen, connected } = useChat();
@@ -27,7 +29,6 @@ export function ChatWindow() {
     >
       <ChatHeader onClose={() => setChatOpen(false)} />
 
-      {/* Indicador de estado */}
       <div className="px-4 py-2 bg-gray-50 border-b flex items-center gap-2">
         <div
           className={`h-2 w-2 rounded-full ${

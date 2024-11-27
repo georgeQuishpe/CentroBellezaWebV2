@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { useChat } from "../../context/ChatContext";
 import { PaperAirplaneIcon } from "@heroicons/react/24/outline";

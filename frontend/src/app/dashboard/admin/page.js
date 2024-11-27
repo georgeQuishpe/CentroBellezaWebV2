@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 export default function AdminDashboard() {
   const [services, setServices] = useState([]);
   const [users, setUsers] = useState([]);
-  const [newService, setNewService] = useState({ 
-    nombre: '', 
-    descripcion: '', 
-    precio: '', 
-    duracion: '', 
-    estado: true 
+  const [newService, setNewService] = useState({
+    nombre: '',
+    descripcion: '',
+    precio: '',
+    duracion: '',
+    estado: true
   });
   const [editingService, setEditingService] = useState(null);
   const [error, setError] = useState('');
@@ -20,8 +20,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchServicesAndUsers = async () => {
       try {
-        const servicesResponse = await fetch('https://peluqueriawebapi.onrender.com/api/v1/services');
-        const usersResponse = await fetch('https://peluqueriawebapi.onrender.com/api/v1/users');
+        const servicesResponse = await fetch('http://localhost:5000/api/v1/services');
+        const usersResponse = await fetch('http://localhost:5000/api/v1/users');
 
         if (!servicesResponse.ok) {
           throw new Error('Error al cargar los servicios');
@@ -49,7 +49,7 @@ export default function AdminDashboard() {
   const createService = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://peluqueriawebapi.onrender.com/api/v1/services', {
+      const response = await fetch('http://localhost:5000/api/v1/services', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newService),
@@ -72,7 +72,7 @@ export default function AdminDashboard() {
   const updateService = async (serviceId) => {
     try {
       const serviceToUpdate = services.find(s => s.id === serviceId);
-      const response = await fetch(`https://peluqueriawebapi.onrender.com/api/v1/services/${serviceId}`, {
+      const response = await fetch(`http://localhost:5000/api/v1/services/${serviceId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(serviceToUpdate),
@@ -92,7 +92,7 @@ export default function AdminDashboard() {
   // Eliminar servicio
   const deleteService = async (id) => {
     try {
-      const response = await fetch(`https://peluqueriawebapi.onrender.com/api/v1/services/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/v1/services/${id}`, {
         method: 'DELETE',
       });
 
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
   // Modificar rol de usuario
   const updateUserRole = async (userId, newRole) => {
     try {
-      const response = await fetch(`https://peluqueriawebapi.onrender.com/api/v1/users/${userId}`, {
+      const response = await fetch(`http://localhost:5000/api/v1/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rol: newRole }),
@@ -120,10 +120,10 @@ export default function AdminDashboard() {
         throw new Error('No se pudo actualizar el rol.');
       }
 
-      const updatedUsers = users.map(user => 
+      const updatedUsers = users.map(user =>
         user.id === userId ? { ...user, rol: newRole } : user
       );
-      
+
       setUsers(updatedUsers);
       setSuccess('Rol de usuario actualizado exitosamente.');
       setEditingUser(null);
@@ -154,7 +154,7 @@ export default function AdminDashboard() {
           {/* Gestión de Servicios */}
           <div className="bg-white shadow-md rounded-xl p-6">
             <h2 className="text-2xl font-semibold text-gray-800 mb-6">Gestión de Servicios</h2>
-            
+
             {/* Formulario de Crear Servicio */}
             <form onSubmit={createService} className="space-y-4 mb-6">
               <div className="grid grid-cols-2 gap-4">
@@ -197,8 +197,8 @@ export default function AdminDashboard() {
                   <option value="false">Inactivo</option>
                 </select>
               </div>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 transition-colors"
               >
                 Crear Servicio
@@ -212,8 +212,8 @@ export default function AdminDashboard() {
                 <p className="text-gray-600">No hay servicios disponibles</p>
               ) : (
                 services.map((service) => (
-                  <div 
-                    key={service.id} 
+                  <div
+                    key={service.id}
                     className="flex justify-between items-center bg-gray-50 p-3 rounded-md mb-2"
                   >
                     {editingService === service.id ? (
@@ -224,7 +224,7 @@ export default function AdminDashboard() {
                             placeholder="Nombre"
                             value={service.nombre}
                             onChange={(e) => {
-                              const updatedServices = services.map(s => 
+                              const updatedServices = services.map(s =>
                                 s.id === service.id ? { ...s, nombre: e.target.value } : s
                               );
                               setServices(updatedServices);
@@ -236,7 +236,7 @@ export default function AdminDashboard() {
                             placeholder="Precio"
                             value={service.precio}
                             onChange={(e) => {
-                              const updatedServices = services.map(s => 
+                              const updatedServices = services.map(s =>
                                 s.id === service.id ? { ...s, precio: e.target.value } : s
                               );
                               setServices(updatedServices);
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
                           placeholder="Descripción"
                           value={service.descripcion}
                           onChange={(e) => {
-                            const updatedServices = services.map(s => 
+                            const updatedServices = services.map(s =>
                               s.id === service.id ? { ...s, descripcion: e.target.value } : s
                             );
                             setServices(updatedServices);
@@ -263,7 +263,7 @@ export default function AdminDashboard() {
                             placeholder="Duración (minutos)"
                             value={service.duracion}
                             onChange={(e) => {
-                              const updatedServices = services.map(s => 
+                              const updatedServices = services.map(s =>
                                 s.id === service.id ? { ...s, duracion: e.target.value } : s
                               );
                               setServices(updatedServices);
@@ -273,7 +273,7 @@ export default function AdminDashboard() {
                           <select
                             value={service.estado}
                             onChange={(e) => {
-                              const updatedServices = services.map(s => 
+                              const updatedServices = services.map(s =>
                                 s.id === service.id ? { ...s, estado: e.target.value === 'true' } : s
                               );
                               setServices(updatedServices);
@@ -333,8 +333,8 @@ export default function AdminDashboard() {
             <h2 className="text-2xl font-semibold text-gray-800 mb-6">Gestión de Usuarios</h2>
             <div className="space-y-2">
               {users.map((user) => (
-                <div 
-                  key={user.id} 
+                <div
+                  key={user.id}
                   className="flex justify-between items-center bg-gray-50 p-3 rounded-md"
                 >
                   <div className="flex-grow min-w-0">
@@ -342,7 +342,7 @@ export default function AdminDashboard() {
                       <span className="font-semibold text-gray-800 truncate mr-2">{user.nombre}</span>
                       <span className="text-gray-600 truncate">{user.email}</span>
                     </div>
-                    
+
                     {editingUser === user.id ? (
                       <div className="flex items-center mt-2">
                         <select
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
                       </div>
                     ) : (
                       <div className="mt-1">
-                        <span 
+                        <span
                           className={`
                             px-2 py-1 rounded-full text-sm font-medium 
                             ${user.rol === 'Admin' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}
