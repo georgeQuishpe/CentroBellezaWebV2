@@ -8,8 +8,8 @@ class ChatMessage extends Model {
             sequelize,
             tableName: CHAT_MESSAGES_TB,
             modelName: 'ChatMessage',
-            timestamps: false
-        }
+            timestamps: false,
+        };
     }
 }
 
@@ -19,33 +19,38 @@ const ChatMessageSchema = {
         autoIncrement: true,
         primaryKey: true,
         allowNull: false,
-        field: 'id'
+        field: 'id',
     },
     usuarioId: {
-        type: DataTypes.STRING(10),
+        type: DataTypes.STRING(50), // Aumenta el tamaño máximo
         allowNull: false,
         references: {
             model: 'Usuarios',
-            key: 'id'
+            key: 'id',
         },
-        field: 'usuarioid'
+        field: 'usuarioid',
+    },
+    toUserId: {
+        type: DataTypes.STRING(50), // Nuevo campo para destinatario
+        allowNull: true, // Opcional
+        field: 'touserid',
     },
     mensaje: {
         type: DataTypes.TEXT,
         allowNull: false,
-        field: 'mensaje'
+        field: 'mensaje',
     },
     fechaEnvio: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
-        field: 'fechaenvio'
+        field: 'fechaenvio',
     },
     leido: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,
-        field: 'leido'
-    }
+        field: 'leido',
+    },
 };
 
 module.exports = { ChatMessage, ChatMessageSchema };

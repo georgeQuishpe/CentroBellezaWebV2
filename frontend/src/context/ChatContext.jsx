@@ -1,20 +1,42 @@
 "use client";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useWebSocket } from "../hooks/useWebSocket";
 
-const ChatContext = createContext();
+const ChatContext = createContext({
+  messages: [],
+  activeChats: [],
+  connected: false,
+  sendMessage: () => {},
+  selectChat: () => {},
+  selectedUserId: null,
+  chatOpen: false,
+  setChatOpen: () => {},
+  isAdmin: false,
+});
 
-export function ChatProvider({ children, userId }) {
-  const { connected, messages, sendMessage, error } = useWebSocket(userId);
-  const [chatOpen, setChatOpen] = useState(false);
+export function ChatProvider({ children, userId, isAdmin = false }) {
+  const {
+    connected,
+    messages,
+    sendMessage,
+    error,
+    activeChats,
+    selectedUserId,
+    selectChat,
+    loadChatMessages, // Asegúrate de obtenerlo del useWebSocket
+  } = useWebSocket(userId, isAdmin);
 
   const value = {
     connected,
     messages,
     sendMessage,
-    chatOpen,
-    setChatOpen,
     error,
+    activeChats,
+    selectedUserId,
+    selectChat,
+    loadChatMessages,  // Inclúyelo en el value
+    userId,
+    isAdmin
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

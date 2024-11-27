@@ -5,9 +5,10 @@ import moment from "moment";
 import "moment/locale/es";
 
 moment.locale("es");
+// Agregar al inicio del componente
 
 export function MessageList() {
-  const { messages } = useChat();
+  const { messages, selectedUserId, isAdmin } = useChat();
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -19,36 +20,61 @@ export function MessageList() {
     const now = moment();
 
     if (messageDate.isSame(now, "day")) {
-      return messageDate.format("HH:mm"); // Solo hora para mensajes de hoy
+      return messageDate.format("HH:mm");
     } else if (messageDate.isSame(now.subtract(1, "day"), "day")) {
       return "Ayer " + messageDate.format("HH:mm");
     } else {
-      return messageDate.format("DD/MM/YYYY HH:mm"); // Fecha completa para otros días
+      return messageDate.format("DD/MM/YYYY HH:mm");
     }
   };
 
-  if (!messages || messages.length === 0) {
+  // Filtrar mensajes según el contexto
+  const filteredMessages =
+    isAdmin && selectedUserId
+      ? messages.filter(
+          (msg) =>
+            msg.usuarioId === selectedUserId ||
+            (msg.usuarioId.startsWith("admin_") &&
+              msg.toUserId === selectedUserId)
+        )
+      : messages;
+
+  if (!filteredMessages || filteredMessages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-500">
-        No hay mensajes aún
+        {isAdmin && !selectedUserId
+          ? "Selecciona un chat para ver los mensajes"
+          : "No hay mensajes aún"}
       </div>
     );
   }
 
+  const { connected } = useChat();
+
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      {messages.map((message) => (
+      {filteredMessages.map((message, index) => (
         <div
-          key={message.id}
+          key={message.id || index}
           className={`flex ${
-            message.usuarioId === "admin" ? "justify-start" : "justify-end"
+            (
+              isAdmin
+                ? message.usuarioId.startsWith("admin")
+                : !message.usuarioId.startsWith("admin")
+            )
+              ? "justify-end"
+              : "justify-start"
           }`}
         >
           <div
             className={`max-w-[80%] rounded-lg p-3 ${
-              message.usuarioId === "admin"
-                ? "bg-gray-100"
-                : "bg-blue-500 text-white"
+              (
+                isAdmin
+                  ? message.usuarioId.startsWith("admin")
+                  : !message.usuarioId.startsWith("admin")
+              )
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-black"
             }`}
           >
             <p className="text-sm">{message.mensaje}</p>
@@ -59,6 +85,11 @@ export function MessageList() {
         </div>
       ))}
       <div ref={bottomRef} />
+      {!connected && (
+        <div className="absolute bottom-0 left-0 right-0 bg-yellow-100 text-yellow-800 px-4 py-2 text-sm">
+          Reconectando...
+        </div>
+      )}
     </div>
   );
 }

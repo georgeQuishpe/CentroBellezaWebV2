@@ -28,14 +28,15 @@ export default function LoginPage() {
         throw new Error(data.message || 'Error al iniciar sesión')
       }
 
-      // Guardar datos del usuario en localStorage o similar
-      localStorage.setItem('user', JSON.stringify(data))
+      // Guardar en localStorage y cookie
+      localStorage.setItem('user', JSON.stringify(data));
+      document.cookie = `user=${JSON.stringify(data)}; path=/; max-age=86400`; // Expira en 24 horas
 
-      // Redirigir según el rol
+      // Modificar la parte de redirección
       if (data.rol === 'Admin') {
-        router.push('/admin/dashboard')
+        router.push('/admin/dashboard')  // Asegúrate de que esta ruta coincida con tu estructura
       } else {
-        router.push('/dashboard')
+        router.push('/user/dashboard')  // Ruta para usuarios normales
       }
     } catch (err) {
       setError(err.message)
@@ -46,7 +47,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-96">
         <h1 className="text-2xl font-bold text-center mb-6">Iniciar Sesión</h1>
-        
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
@@ -85,15 +86,15 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-4 text-center">
-          <Link 
-            href="/signup" 
+          <Link
+            href="/signup"
             className="text-blue-500 hover:text-blue-600"
           >
             Crear cuenta
           </Link>
           <span className="mx-2">|</span>
-          <Link 
-            href="/forgot-password" 
+          <Link
+            href="/forgot-password"
             className="text-blue-500 hover:text-blue-600"
           >
             Olvidé mi contraseña

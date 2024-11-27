@@ -1,109 +1,88 @@
-// backend/websocket/chat.socket.js
 const ChatMessagesService = require('../services/chatMessages.service');
 const service = new ChatMessagesService();
 
 module.exports = (io) => {
-    // Almacenar usuarios conectados
     const connectedUsers = new Map();
+    const adminSockets = new Set();
 
-    io.on('connection', (socket) => {
+    io.on('connection', async (socket) => {
         const userId = socket.handshake.query.userId;
         console.log(`Usuario conectado: ${userId}`);
 
-        // Almacenar la conexión del usuario
+        // Guardar la conexión y verificar si es admin
         connectedUsers.set(userId, socket.id);
+        const isAdmin = userId.startsWith('admin_');
+        if (isAdmin) {
+            adminSockets.add(socket.id);
+            console.log('Admin conectado:', socket.id);
+        }
+
+        console.log("Usuarios conectados:", Array.from(connectedUsers.keys()));
+        console.log("Admins conectados:", Array.from(adminSockets));
 
         // Cargar mensajes anteriores
-        service.findByUser(userId)
-            .then(messages => {
-                socket.emit('previousMessages', messages);
-            })
-            .catch(error => {
-                console.error('Error al cargar mensajes:', error);
-            });
+        try {
+            const messages = await service.find(); // Cargar todos los mensajes para admin
+            console.log('Cargando mensajes previos:', messages);
+            socket.emit('previousMessages', messages);
+        } catch (error) {
+            console.error('Error al cargar mensajes:', error);
+            socket.emit('previousMessages', []);
+        }
 
         // Manejar mensajes nuevos
-        socket.on('sendMessage', async (messageData) => {
+        socket.on("sendMessage", async (data) => {
+            const { content, userId, toUserId } = data;
+
             try {
-                // Guardar mensaje en la base de datos
+                // Guardar el mensaje en la base de datos
                 const savedMessage = await service.create({
-                    usuarioId: messageData.userId,
-                    mensaje: messageData.content,
-                    leido: false
+                    usuarioId: userId,
+                    mensaje: content,
+                    leido: false,
+                    fechaEnvio: new Date(),
                 });
 
-                // Emitir mensaje a todos los administradores conectados
-                const admins = Array.from(connectedUsers.entries())
-                    .filter(([userId]) => userId.startsWith('admin'));
+                // Si el mensaje proviene de un admin, envíalo al cliente correspondiente
+                if (userId.startsWith("admin_") && toUserId) {
+                    const clientSocketId = connectedUsers.get(toUserId);
+                    if (clientSocketId) {
+                        io.to(clientSocketId).emit("message", savedMessage);
+                    } else {
+                        console.error("Cliente no conectado:", toUserId);
+                    }
+                }
 
-                admins.forEach(([_, socketId]) => {
-                    io.to(socketId).emit('message', {
-                        ...savedMessage.dataValues,
-                        isAdmin: false
-                    });
-                });
-
-                // Confirmar recepción al remitente
-                socket.emit('message', {
-                    ...savedMessage.dataValues,
-                    isAdmin: false
-                });
-
-            } catch (error) {
-                console.error('Error al guardar mensaje:', error);
-                socket.emit('error', { message: 'Error al enviar mensaje' });
-            }
-        });
-
-        // Manejar mensajes de admin
-        socket.on('adminMessage', async (messageData) => {
-            try {
-                const savedMessage = await service.create({
-                    usuarioId: 'admin',
-                    mensaje: messageData.content,
-                    leido: false
-                });
-
-                // Enviar al usuario específico
-                const userSocketId = connectedUsers.get(messageData.toUserId);
-                if (userSocketId) {
-                    io.to(userSocketId).emit('message', {
-                        ...savedMessage.dataValues,
-                        isAdmin: true
+                // Si el mensaje proviene de un cliente, notifícalo a todos los admins
+                if (!userId.startsWith("admin_")) {
+                    adminSockets.forEach((adminSocketId) => {
+                        io.to(adminSocketId).emit("message", savedMessage);
                     });
                 }
 
-                // Confirmar al admin
-                socket.emit('message', {
-                    ...savedMessage.dataValues,
-                    isAdmin: true
-                });
-
+                // Enviar confirmación al remitente
+                socket.emit("message", savedMessage);
             } catch (error) {
-                console.error('Error al enviar mensaje de admin:', error);
-                socket.emit('error', { message: 'Error al enviar mensaje' });
+                console.error("Error al enviar mensaje:", error);
+                socket.emit("error", { message: "Error al procesar el mensaje" });
             }
         });
 
         // Manejar desconexión
         socket.on('disconnect', () => {
             console.log(`Usuario desconectado: ${userId}`);
+            if (isAdmin) {
+                adminSockets.delete(socket.id);
+                console.log('Admin desconectado:', socket.id);
+            }
             connectedUsers.delete(userId);
+            console.log('Usuarios conectados:', connectedUsers.size);
+            console.log('Admins conectados:', adminSockets.size);
         });
 
-        // Al inicio del archivo:
+        // Manejar errores
         socket.on('error', (error) => {
-            console.error('Socket error:', error);
+            console.error('Error de socket:', error);
         });
-
-        // En la carga de mensajes:
-        service.findByUser(userId)
-            .then(messages => {
-                socket.emit('previousMessages', messages || []);
-            })
-            .catch(error => {
-                console.error('Error al cargar mensajes:', error);
-                socket.emit('previousMessages', []);
-            });
     });
 };

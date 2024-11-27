@@ -1,4 +1,5 @@
 const { models } = require('../libs/sequelize');
+const { Op } = require('sequelize'); // Asegúrate de importar 
 
 class ChatMessagesService {
     constructor() { }
@@ -9,13 +10,25 @@ class ChatMessagesService {
         });
         return messages;
     }
-
     async findByUser(userId) {
-        const messages = await models.ChatMessage.findAll({
-            where: { usuarioId: userId },
-            order: [['fechaEnvio', 'ASC']]
-        });
-        return messages;
+        try {
+            console.log('Buscando mensajes para usuario:', userId);
+            const messages = await models.ChatMessage.findAll({
+                where: {
+                    [Op.or]: [
+                        { usuarioId: userId },
+                        { toUserId: userId } // Asegúrate de que `toUserId` existe en tu esquema
+                    ]
+                },
+                order: [['fechaEnvio', 'ASC']],
+                raw: true // Esto devuelve objetos JSON planos
+            });
+            console.log('Mensajes encontrados:', messages.length);
+            return messages;
+        } catch (error) {
+            console.error('Error en findByUser:', error);
+            throw error;
+        }
     }
 
     async create(data) {
