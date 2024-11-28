@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { AdminChat } from '../../../components/Chat/AdminChat';
 import { ChatProvider } from '../../../context/ChatContext';
 import { EditAppointmentModal } from "../../../components/Citas/EditAppointmentModal"
+import { ConfirmationModal } from '../../../components/ConfirmationModal';
 export default function AdminDashboard() {
     const router = useRouter();
     const [user, setUser] = useState(null); // Movido arriba
@@ -72,6 +73,27 @@ export default function AdminDashboard() {
         initializeAdmin();
     }, [router]); // Solo depende del router
 
+
+    const [confirmationModal, setConfirmationModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: null
+    });
+
+    // Función para mostrar el modal de confirmación
+    const showConfirmation = (title, message, onConfirm) => {
+        setConfirmationModal({
+            isOpen: true,
+            title,
+            message,
+            onConfirm: () => {
+                onConfirm();
+                setConfirmationModal({ isOpen: false, title: '', message: '', onConfirm: null });
+            }
+        });
+    };
+
     // Todas las funciones de manejo
     const createService = async (e) => {
         e.preventDefault();
@@ -97,67 +119,85 @@ export default function AdminDashboard() {
 
     // Actualizar servicio
     const updateService = async (serviceId) => {
-        try {
-            const serviceToUpdate = services.find(s => s.id === serviceId);
-            const response = await fetch(`http://localhost:5000/api/v1/services/${serviceId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(serviceToUpdate),
-            });
+        showConfirmation(
+            "Guardar Cambios",
+            "¿Deseas guardar los cambios realizados en este servicio?",
+            async () => {
+                try {
+                    const serviceToUpdate = services.find(s => s.id === serviceId);
+                    const response = await fetch(`http://localhost:5000/api/v1/services/${serviceId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(serviceToUpdate),
+                    });
 
-            if (!response.ok) {
-                throw new Error('No se pudo actualizar el servicio.');
+                    if (!response.ok) {
+                        throw new Error('No se pudo actualizar el servicio.');
+                    }
+
+                    setSuccess('Servicio actualizado exitosamente.');
+                    setEditingService(null);
+                } catch (err) {
+                    setError(err.message);
+                }
             }
-
-            setSuccess('Servicio actualizado exitosamente.');
-            setEditingService(null);
-        } catch (err) {
-            setError(err.message);
-        }
+        );
     };
 
     // Eliminar servicio
     const deleteService = async (id) => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/v1/services/${id}`, {
-                method: 'DELETE',
-            });
+        showConfirmation(
+            "Eliminar Servicio",
+            "¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.",
+            async () => {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/v1/services/${id}`, {
+                        method: 'DELETE',
+                    });
 
-            if (!response.ok) {
-                throw new Error('No se pudo eliminar el servicio.');
+                    if (!response.ok) {
+                        throw new Error('No se pudo eliminar el servicio.');
+                    }
+
+                    setServices(services.filter((service) => service.id !== id));
+                    setSuccess('Servicio eliminado exitosamente.');
+                } catch (err) {
+                    setError(err.message);
+                }
             }
-
-            setServices(services.filter((service) => service.id !== id));
-            setSuccess('Servicio eliminado exitosamente.');
-        } catch (err) {
-            setError(err.message);
-        }
+        );
     };
 
     // Modificar rol de usuario
-    const updateUserRole = async (userId, newRole) => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/v1/users/${userId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rol: newRole }),
-            });
+const updateUserRole = async (userId, newRole) => {
+        showConfirmation(
+            "Cambiar Rol de Usuario",
+            `¿Estás seguro de que deseas cambiar el rol del usuario a ${newRole}?`,
+            async () => {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/v1/users/${userId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ rol: newRole }),
+                    });
 
-            if (!response.ok) {
-                throw new Error('No se pudo actualizar el rol.');
+                    if (!response.ok) {
+                        throw new Error('No se pudo actualizar el rol.');
+                    }
+
+                    const updatedUsers = users.map(user =>
+                        user.id === userId ? { ...user, rol: newRole } : user
+                    );
+
+                    setUsers(updatedUsers);
+                    setSuccess('Rol de usuario actualizado exitosamente.');
+                    setEditingUser(null);
+                } catch (err) {
+                    setError(err.message);
+                    console.error('Error updating user role:', err);
+                }
             }
-
-            const updatedUsers = users.map(user =>
-                user.id === userId ? { ...user, rol: newRole } : user
-            );
-
-            setUsers(updatedUsers);
-            setSuccess('Rol de usuario actualizado exitosamente.');
-            setEditingUser(null);
-        } catch (err) {
-            setError(err.message);
-            console.error('Error updating user role:', err);
-        }
+        );
     };
 
     if (!mounted || !user) {
@@ -428,6 +468,13 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             </div>
+            <ConfirmationModal
+                isOpen={confirmationModal.isOpen}
+                onClose={() => setConfirmationModal({ isOpen: false, title: '', message: '', onConfirm: null })}
+                onConfirm={confirmationModal.onConfirm}
+                title={confirmationModal.title}
+                message={confirmationModal.message}
+            />
         </div>
     );
 }
@@ -438,11 +485,29 @@ function AppointmentManager() {
     const [loading, setLoading] = useState(true);
     const [editingAppointment, setEditingAppointment] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [confirmationModal, setConfirmationModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: null
+    });
 
     useEffect(() => {
         fetchAppointments();
         fetchServices();
     }, []);
+
+    const showConfirmation = (title, message, onConfirm) => {
+        setConfirmationModal({
+            isOpen: true,
+            title,
+            message,
+            onConfirm: () => {
+                onConfirm();
+                setConfirmationModal({ isOpen: false, title: '', message: '', onConfirm: null });
+            }
+        });
+    };
 
     const fetchServices = async () => {
         try {
@@ -455,42 +520,52 @@ function AppointmentManager() {
     };
 
     const handleEditAppointment = async (appointmentData) => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/v1/appointments/${appointmentData.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(appointmentData)
-            });
+        showConfirmation(
+            "Modificar Cita",
+            "¿Estás seguro de que deseas modificar esta cita?",
+            async () => {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/v1/appointments/${appointmentData.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(appointmentData)
+                    });
 
-            if (response.ok) {
-                setShowEditModal(false);
-                fetchAppointments();
-            } else {
-                throw new Error('Error al actualizar la cita');
+                    if (response.ok) {
+                        setShowEditModal(false);
+                        fetchAppointments();
+                    } else {
+                        throw new Error('Error al actualizar la cita');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error al actualizar la cita');
+                }
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error al actualizar la cita');
-        }
+        );
     };
 
     const handleDeleteAppointment = async (id) => {
-        if (!confirm('¿Estás seguro de que deseas eliminar esta cita?')) return;
+        showConfirmation(
+            "Eliminar Cita",
+            "¿Estás seguro de que deseas eliminar esta cita? Esta acción no se puede deshacer.",
+            async () => {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/v1/appointments/${id}`, {
+                        method: 'DELETE'
+                    });
 
-        try {
-            const response = await fetch(`http://localhost:5000/api/v1/appointments/${id}`, {
-                method: 'DELETE'
-            });
-
-            if (response.ok) {
-                fetchAppointments();
-            } else {
-                throw new Error('Error al eliminar la cita');
+                    if (response.ok) {
+                        fetchAppointments();
+                    } else {
+                        throw new Error('Error al eliminar la cita');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error al eliminar la cita');
+                }
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error al eliminar la cita');
-        }
+        );
     };
 
     const fetchAppointments = async () => {
@@ -506,18 +581,24 @@ function AppointmentManager() {
     };
 
     const updateAppointmentStatus = async (appointmentId, newStatus) => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/v1/appointments/${appointmentId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ estado: newStatus })
-            });
-            if (response.ok) {
-                fetchAppointments(); // Recargar citas
+        showConfirmation(
+            "Cambiar Estado de Cita",
+            `¿Estás seguro de que deseas cambiar el estado de la cita a "${newStatus}"?`,
+            async () => {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/v1/appointments/${appointmentId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ estado: newStatus })
+                    });
+                    if (response.ok) {
+                        fetchAppointments();
+                    }
+                } catch (error) {
+                    console.error('Error al actualizar cita:', error);
+                }
             }
-        } catch (error) {
-            console.error('Error al actualizar cita:', error);
-        }
+        );
     };
 
     return (
@@ -588,6 +669,13 @@ function AppointmentManager() {
                 appointment={editingAppointment}
                 services={services}
                 onSave={handleEditAppointment}
+            />
+            <ConfirmationModal
+                isOpen={confirmationModal.isOpen}
+                onClose={() => setConfirmationModal({ isOpen: false, title: '', message: '', onConfirm: null })}
+                onConfirm={confirmationModal.onConfirm}
+                title={confirmationModal.title}
+                message={confirmationModal.message}
             />
         </div>
     );

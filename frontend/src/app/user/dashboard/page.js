@@ -245,7 +245,7 @@ export default function UserDashboard() {
                         <ChatWindow isAdmin={false} />
                     </ChatProvider>
                 </div>
-                <UserAppointments userId={user.id} />
+                <UserAppointments key={appointmentsKey} userId={user.id} />
             </div>
         </div>
     );
