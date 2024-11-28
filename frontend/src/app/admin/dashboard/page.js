@@ -34,6 +34,12 @@ export default function AdminDashboard() {
     const [success, setSuccess] = useState('');
     const [editingUser, setEditingUser] = useState(null);
 
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        router.push('/login');
+    };
+
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -216,8 +222,15 @@ export default function AdminDashboard() {
     return (
         <div className="min-h-screen bg-gray-100 p-8">
             <div className="max-w-6xl mx-auto">
-                <h1 className="text-4xl font-bold text-gray-900 mb-8">Panel de Administración</h1>
-
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-2xl font-bold">Panel de {user?.rol}</h1>
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    >
+                        Cerrar Sesión
+                    </button>
+                </div>
                 {/* Mensajes de Error y Éxito */}
                 {error && (
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">

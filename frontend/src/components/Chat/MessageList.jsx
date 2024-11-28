@@ -7,24 +7,12 @@ import "moment/locale/es";
 moment.locale("es");
 
 export function MessageList() {
-  const { messages, selectedUserId, isAdmin } = useChat();
+  const { messages, selectedUserId, isAdmin, userId } = useChat();
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  const formatTime = (timestamp) => {
-    const messageDate = moment(timestamp);
-    const now = moment();
-
-    if (messageDate.isSame(now, "day")) {
-      return messageDate.format("HH:mm");
-    } else if (messageDate.isSame(now.subtract(1, "day"), "day")) {
-      return "Ayer " + messageDate.format("HH:mm");
-    }
-    return messageDate.format("DD/MM/YYYY HH:mm");
-  };
 
   const filteredMessages =
     isAdmin && selectedUserId
@@ -34,46 +22,52 @@ export function MessageList() {
         )
       : messages;
 
-  if (!filteredMessages?.length) {
+  const isOwnMessage = (message) => {
+    if (isAdmin) {
+      return message.usuarioId.includes("admin");
+    }
     return (
-      <div className="flex-1 flex items-center justify-center text-gray-500">
-        {isAdmin && !selectedUserId
-          ? "Selecciona un chat para ver los mensajes"
-          : "No hay mensajes aún"}
-      </div>
+      message.usuarioId !== "admin" && !message.usuarioId.includes("admin")
     );
-  }
+  };
 
   const isUserMessage = (message) => {
     if (isAdmin) {
-      return !message.usuarioId.startsWith("admin");
+      return message.usuarioId === selectedUserId;
     }
-    return message.usuarioId === selectedUserId;
+    return message.usuarioId === userId;
   };
 
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      {filteredMessages.map((message) => (
-        <div
-          key={message.id}
-          className={`flex ${
-            isUserMessage(message) ? "justify-start" : "justify-end"
-          }`}
-        >
+      {filteredMessages.map((message) => {
+        const isOwn = isOwnMessage(message);
+        return (
           <div
-            className={`max-w-[80%] rounded-lg p-3 ${
-              isUserMessage(message)
-                ? "bg-gray-100 text-black"
-                : "bg-blue-500 text-white"
+            key={message.id}
+            className={`flex ${
+              isUserMessage(message) ? "justify-start" : "justify-end"
             }`}
           >
-            <p className="text-sm">{message.mensaje}</p>
-            <span className="text-xs mt-1 opacity-75 block">
-              {formatTime(message.fechaEnvio)}
-            </span>
+            <div
+              className={`max-w-[80%] rounded-lg p-3 ${
+                isUserMessage(message)
+                  ? "bg-gray-100 text-black"
+                  : "bg-blue-500 text-white"
+              }`}
+            >
+              <div className="text-xs mb-1">
+                {isUserMessage(message)
+                  ? isAdmin
+                    ? message.usuario?.nombre
+                    : "Tú"
+                  : "Soporte"}
+              </div>
+              <p className="text-sm">{message.mensaje}</p>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
       <div ref={bottomRef} />
     </div>
   );

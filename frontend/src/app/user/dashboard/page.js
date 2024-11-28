@@ -17,6 +17,12 @@ export default function UserDashboard() {
     const [selectedServiceData, setSelectedServiceData] = useState(null); // Nuevo estado
     const [appointmentsKey, setAppointmentsKey] = useState(0);
 
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        document.cookie = 'user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        router.push('/login');
+    };
+
     // Efecto para la hidratación
     useEffect(() => {
         setMounted(true);
@@ -69,7 +75,7 @@ export default function UserDashboard() {
         setAvailableHours([]); // Limpia los horarios al cambiar la fecha
 
         try {
-            
+
             const userData = JSON.parse(localStorage.getItem('user'));
             if (!userData || !userData.token) {
                 throw new Error('No hay sesión activa');
@@ -152,8 +158,15 @@ export default function UserDashboard() {
     return (
         <div className="min-h-screen bg-gray-100 p-4">
             <div className="max-w-7xl mx-auto">
-                <h1 className="text-blue-500 text-2xl font-bold mb-4">Panel de Usuario</h1>
-
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-2xl font-bold">Panel de {user?.rol}</h1>
+                    <button
+                        onClick={handleLogout}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    >
+                        Cerrar Sesión
+                    </button>
+                </div>
                 {/* Formulario de reserva */}
                 <div className="bg-white p-4 rounded-lg shadow mb-6">
                     <h2 className="text-stone-500 text-xl font-semibold mb-4">Reservar Cita</h2>
