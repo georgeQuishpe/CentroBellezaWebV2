@@ -160,26 +160,26 @@ export default function UserDashboard() {
     return (
         <div className="min-h-screen bg-gray-100 p-4">
             <div className="max-w-7xl mx-auto">
-                <h1 className="text-2xl font-bold mb-4">Panel de Usuario</h1>
+                <h1 className="text-blue-500 text-2xl font-bold mb-4">Panel de Usuario</h1>
 
                 {/* Formulario de reserva */}
                 <div className="bg-white p-4 rounded-lg shadow mb-6">
-                    <h2 className="text-xl font-semibold mb-4">Reservar Cita</h2>
+                    <h2 className="text-stone-500 text-xl font-semibold mb-4">Reservar Cita</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label className="block mb-2">Fecha:</label>
+                            <label className="text-black block mb-2">Fecha:</label>
                             <input
                                 type="date"
-                                className="w-full p-2 border rounded"
+                                className="text-black w-full p-2 border rounded"
                                 value={selectedDate}
                                 onChange={(e) => handleDateSelection(e.target.value)}
                             />
                         </div>
                         {selectedDate && (
                             <div>
-                                <label className="block mb-2">Hora:</label>
+                                <label className="text-black block mb-2">Hora:</label>
                                 <select
-                                    className="w-full p-2 border rounded"
+                                    className="text-black w-full p-2 border rounded"
                                     value={selectedTime}
                                     onChange={(e) => setSelectedTime(e.target.value)}
                                 >
@@ -194,8 +194,8 @@ export default function UserDashboard() {
                         )}
                         {selectedServiceData && (
                             <div className="col-span-full bg-blue-50 p-4 rounded">
-                                <h3 className="font-semibold">Servicio seleccionado:</h3>
-                                <p>{selectedServiceData.nombre} - ${selectedServiceData.precio}</p>
+                                <h3 className="text-black font-semibold">Servicio seleccionado:</h3>
+                                <p className='text-black'>{selectedServiceData.nombre} - ${selectedServiceData.precio}</p>
                                 <button
                                     onClick={handleReserve}
                                     className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -210,7 +210,7 @@ export default function UserDashboard() {
                 {/* Lista de Servicios */}
                 <div className="grid gap-6">
                     <div className="col-span-2 bg-white p-4 rounded-lg shadow">
-                        <h2 className="text-xl font-semibold mb-4">Servicios Disponibles</h2>
+                        <h2 className="text-stone-500 text-xl font-semibold mb-4">Servicios Disponibles</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {services.map((service) => (
                                 <div
@@ -218,7 +218,7 @@ export default function UserDashboard() {
                                     className={`border p-4 rounded-lg ${selectedService === service.id ? 'border-blue-500' : ''
                                         }`}
                                 >
-                                    <h3 className="font-bold">{service.nombre}</h3>
+                                    <h3 className="text-black font-bold">{service.nombre}</h3>
                                     <p className="text-gray-600">{service.descripcion}</p>
                                     <div className="mt-2 flex justify-between items-center">
                                         <span className="text-gray-500">

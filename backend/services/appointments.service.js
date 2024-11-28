@@ -8,10 +8,16 @@ class AppointmentsService {
     async find() {
         try {
             const res = await models.Appointment.findAll({
-                include: [{
-                    model: models.Service,
-                    as: 'servicio'
-                }]
+                include: [
+                    {
+                        model: models.Service,
+                        as: 'servicio',
+                    },
+                    {
+                        model: models.User,
+                        as: 'usuario',
+                    }
+                ]
             });
             return res;
         } catch (error) {
@@ -19,6 +25,7 @@ class AppointmentsService {
             throw error;
         }
     }
+    
 
     async findById(id) {
         try {

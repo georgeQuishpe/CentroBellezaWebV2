@@ -41,6 +41,16 @@ function setupModels(sequelize) {
         as: 'servicio',
         foreignKey: 'servicioId'
     });
+
+    User.hasMany(Appointment, {
+        as: 'citas',
+        foreignKey: 'usuarioId'
+    });
+
+    Appointment.belongsTo(User, {
+        as: 'usuario',
+        foreignKey: 'usuarioId'
+    });
 }
 
 module.exports = setupModels;

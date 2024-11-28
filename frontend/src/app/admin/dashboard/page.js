@@ -522,7 +522,7 @@ function AppointmentManager() {
 
     return (
         <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Gestión de Citas</h2>
+            <h2 className="text-gray-800 text-2xl font-semibold mb-4">Gestión de Citas</h2>
             {loading ? (
                 <p>Cargando citas...</p>
             ) : (
@@ -540,16 +540,16 @@ function AppointmentManager() {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {appointments.map((appointment) => (
                                 <tr key={appointment.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="text-black px-6 py-4 whitespace-nowrap">
                                         {appointment.usuario?.nombre}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="text-black px-6 py-4 whitespace-nowrap">
                                         {appointment.servicio?.nombre}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="text-black px-6 py-4 whitespace-nowrap">
                                         {new Date(appointment.fecha).toLocaleString()}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="text-black px-6 py-4 whitespace-nowrap">
                                         <select
                                             value={appointment.estado}
                                             onChange={(e) => updateAppointmentStatus(appointment.id, e.target.value)}
@@ -561,7 +561,7 @@ function AppointmentManager() {
                                             <option value="Cancelada">Cancelada</option>
                                         </select>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="text-black px-6 py-4 whitespace-nowrap">
                                         <button
                                             onClick={() => handleEditAppointment(appointment)}
                                             className="text-blue-600 hover:text-blue-900 mr-2"
