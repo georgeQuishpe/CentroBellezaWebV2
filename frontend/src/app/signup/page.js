@@ -27,6 +27,12 @@ export default function SignupPage() {
         e.preventDefault()
         setError('')
 
+        if (formData.password !== formData.confirmPassword) {
+            setError('Las contraseñas no coinciden')
+            setLoading(false)
+            return
+        }
+
         try {
             const response = await fetch('http://localhost:5000/api/v1/auth/signup', {
                 method: 'POST',
@@ -51,7 +57,7 @@ export default function SignupPage() {
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center">
             <div className="bg-white p-8 rounded-lg shadow-md w-96">
-                <h1 className="text-2xl font-bold text-center mb-6">Crear Cuenta</h1>
+                <h1 className="text-blue-500 text-2xl font-bold text-center mb-6">Crear Cuenta</h1>
 
                 {error && (
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -67,7 +73,7 @@ export default function SignupPage() {
                             name="id"
                             value={formData.id}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            className= "text-black w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
                             required
                             maxLength="10"
                         />
@@ -80,7 +86,7 @@ export default function SignupPage() {
                             name="nombre"
                             value={formData.nombre}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            className="text-black w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
                             required
                         />
                     </div>
@@ -92,7 +98,7 @@ export default function SignupPage() {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            className="text-black w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
                             required
                         />
                     </div>
@@ -104,7 +110,7 @@ export default function SignupPage() {
                             name="telefono"
                             value={formData.telefono}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            className="text-black w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
                             required
                         />
                     </div>
@@ -116,7 +122,20 @@ export default function SignupPage() {
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            className="text-black w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            required
+                            minLength="8"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-gray-700 mb-2">Confirmar contraseña</label>
+                        <input
+                            type="password"
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            className="text-black w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
                             required
                             minLength="8"
                         />

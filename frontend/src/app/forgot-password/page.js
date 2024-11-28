@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center">
             <div className="bg-white p-8 rounded-lg shadow-md w-96">
-                <h1 className="text-2xl font-bold text-center mb-6">Recuperar Contraseña</h1>
+                <h1 className="text-blue-500 text-2xl font-bold text-center mb-6">Recuperar Contraseña</h1>
 
                 {error && (
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -86,7 +86,7 @@ export default function ForgotPasswordPage() {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
+                            className="text-black w-full p-2 border rounded-lg focus:outline-none focus:border-blue-500"
                             placeholder="ejemplo@correo.com"
                             required
                             disabled={loading}
