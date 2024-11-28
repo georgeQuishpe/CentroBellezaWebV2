@@ -1,29 +1,62 @@
 const { models } = require('../libs/sequelize');
 const { Op } = require('sequelize'); // Asegúrate de importar 
+const { User } = require('../db/models/users.model'); // Importa el modelo User
 
 class ChatMessagesService {
-    constructor() { }
-
-    async find() {
-        const messages = await models.ChatMessage.findAll({
-            order: [['fechaEnvio', 'ASC']]
-        });
-        return messages;
+    constructor() {
+        // Si necesitas acceder a los modelos en el constructor
+        this.models = models;
     }
-    async findByUser(userId) {
+
+    async find(userId) {
         try {
-            console.log('Buscando mensajes para usuario:', userId);
+            if (!userId) {
+                throw new Error('El userId es undefined o null. No se puede realizar la búsqueda.');
+            }
+
             const messages = await models.ChatMessage.findAll({
                 where: {
                     [Op.or]: [
                         { usuarioId: userId },
-                        { toUserId: userId } // Asegúrate de que `toUserId` existe en tu esquema
-                    ]
+                        { toUserId: userId },
+                    ],
                 },
                 order: [['fechaEnvio', 'ASC']],
-                raw: true // Esto devuelve objetos JSON planos
+                include: [
+                    {
+                        model: User,
+                        as: 'remitente',
+                        attributes: ['id', 'nombre', 'email'],
+                    },
+                    {
+                        model: User,
+                        as: 'destinatario',
+                        attributes: ['id', 'nombre', 'email'],
+                    },
+                ],
             });
+
             console.log('Mensajes encontrados:', messages.length);
+            return messages;
+        } catch (error) {
+            console.error('Error en find:', error.message);
+            throw error;
+        }
+    }
+
+
+
+    async findByUser(userId) {
+        try {
+            const messages = await models.ChatMessage.findAll({
+                where: {
+                    [Op.or]: [
+                        { usuarioId: userId },
+                        { toUserId: userId }
+                    ]
+                },
+                order: [['fechaEnvio', 'ASC']]
+            });
             return messages;
         } catch (error) {
             console.error('Error en findByUser:', error);
@@ -32,16 +65,25 @@ class ChatMessagesService {
     }
 
     async create(data) {
-        const newMessage = await models.ChatMessage.create(data);
-        return newMessage;
+        try {
+            return await models.ChatMessage.create(data);
+        } catch (error) {
+            console.error('Error en create:', error);
+            throw error;
+        }
     }
 
     async markAsRead(id) {
-        const message = await models.ChatMessage.findByPk(id);
-        if (!message) {
-            throw new Error('Mensaje no encontrado');
+        try {
+            const message = await models.ChatMessage.findByPk(id);
+            if (!message) {
+                throw new Error('Mensaje no encontrado');
+            }
+            return await message.update({ leido: true });
+        } catch (error) {
+            console.error('Error en markAsRead:', error);
+            throw error;
         }
-        return await message.update({ leido: true });
     }
 }
 

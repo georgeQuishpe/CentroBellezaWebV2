@@ -1,5 +1,7 @@
 const { Sequelize } = require('sequelize');
 const setupModels = require('../db/models');
+
+
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -17,7 +19,10 @@ const sequelize = new Sequelize({
     }
 });
 
-sequelize.sync();
+sequelize.sync({ force: false, alter: false });
+
 setupModels(sequelize);
+console.log(sequelize.models);
+
 
 module.exports = sequelize;

@@ -22,17 +22,23 @@ const ChatMessageSchema = {
         field: 'id',
     },
     usuarioId: {
-        type: DataTypes.STRING(50), // Aumenta el tamaño máximo
+        type: DataTypes.STRING(50),
         allowNull: false,
         references: {
-            model: 'Usuarios',
-            key: 'id',
+            model: 'usuarios', // En minúsculas para PostgreSQL
+            key: 'id'
         },
+        onDelete: 'CASCADE',
         field: 'usuarioid',
     },
     toUserId: {
-        type: DataTypes.STRING(50), // Nuevo campo para destinatario
-        allowNull: true, // Opcional
+        type: DataTypes.STRING(50),
+        allowNull: true,
+        references: {
+            model: 'usuarios', // También referencia a usuarios
+            key: 'id'
+        },
+        onDelete: 'SET NULL',
         field: 'touserid',
     },
     mensaje: {

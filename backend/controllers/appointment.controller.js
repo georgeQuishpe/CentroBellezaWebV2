@@ -19,10 +19,21 @@ const getById = async (req, res) => {
     }
 }
 
+const getByUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const response = await service.findByUser(userId); // Utiliza un método en el servicio
+        res.json(response);
+    } catch (error) {
+        console.error("Error en getByUser:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 const create = async (req, res) => {
     try {
         const response = await service.create(req.body);
-        res.json({success: true, data: response});
+        res.json({ success: true, data: response });
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
     }
@@ -46,6 +57,26 @@ const remove = async (req, res) => {
     }
 }
 
+
+const getAvailableHours = async (req, res) => {
+    try {
+        const { date } = req.params;
+        const hours = await service.getAvailableHours(date);
+        res.json(hours);
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+
+
 module.exports = {
-    get, getById, create, update, remove, get
+    get,
+    getById,
+    getByUser,
+    create,
+    update,
+    remove,
+    getAvailableHours, // Incluye solo los controladores necesarios
 };

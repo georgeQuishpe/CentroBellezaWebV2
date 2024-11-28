@@ -1,4 +1,4 @@
-const ChatMessagesService = require('../services/chatMessages.service');
+const ChatMessagesService = require('../services/chatMessages.service.js');
 const service = new ChatMessagesService();
 
 module.exports = (io) => {
@@ -7,82 +7,60 @@ module.exports = (io) => {
 
     io.on('connection', async (socket) => {
         const userId = socket.handshake.query.userId;
-        console.log(`Usuario conectado: ${userId}`);
+        const isAdmin = socket.handshake.query.isAdmin === 'true';
 
-        // Guardar la conexión y verificar si es admin
+        if (!userId) {
+            console.error('Error: userId no está definido en la conexión WebSocket.');
+            socket.emit('error', 'userId no válido.');
+            return;
+        }
+
+        // Guardar el socket del usuario conectado
         connectedUsers.set(userId, socket.id);
-        const isAdmin = userId.startsWith('admin_');
         if (isAdmin) {
             adminSockets.add(socket.id);
-            console.log('Admin conectado:', socket.id);
         }
 
-        console.log("Usuarios conectados:", Array.from(connectedUsers.keys()));
-        console.log("Admins conectados:", Array.from(adminSockets));
-
-        // Cargar mensajes anteriores
         try {
-            const messages = await service.find(); // Cargar todos los mensajes para admin
-            console.log('Cargando mensajes previos:', messages);
+            // Cargar mensajes previos para el usuario conectado
+            const messages = await service.findByUser(userId);
             socket.emit('previousMessages', messages);
         } catch (error) {
-            console.error('Error al cargar mensajes:', error);
-            socket.emit('previousMessages', []);
+            console.error('Error al cargar mensajes:', error.message);
         }
 
-        // Manejar mensajes nuevos
-        socket.on("sendMessage", async (data) => {
-            const { content, userId, toUserId } = data;
+        // Manejar el evento de recibir un mensaje nuevo
+        socket.on('sendMessage', async (messageData) => {
+            if (!messageData.userId || !messageData.content) {
+                throw new Error('userId y content son requeridos');
+            }
 
             try {
-                // Guardar el mensaje en la base de datos
-                const savedMessage = await service.create({
-                    usuarioId: userId,
-                    mensaje: content,
-                    leido: false,
-                    fechaEnvio: new Date(),
+                const newMessage = await service.create({
+                    usuarioId: messageData.userId,
+                    mensaje: messageData.content,
+                    toUserId: 'admin', // Asegúrate que siempre tenga este valor para mensajes de cliente
+                    fechaEnvio: new Date()
                 });
 
-                // Si el mensaje proviene de un admin, envíalo al cliente correspondiente
-                if (userId.startsWith("admin_") && toUserId) {
-                    const clientSocketId = connectedUsers.get(toUserId);
-                    if (clientSocketId) {
-                        io.to(clientSocketId).emit("message", savedMessage);
-                    } else {
-                        console.error("Cliente no conectado:", toUserId);
-                    }
-                }
-
-                // Si el mensaje proviene de un cliente, notifícalo a todos los admins
-                if (!userId.startsWith("admin_")) {
-                    adminSockets.forEach((adminSocketId) => {
-                        io.to(adminSocketId).emit("message", savedMessage);
-                    });
-                }
-
-                // Enviar confirmación al remitente
-                socket.emit("message", savedMessage);
+                socket.emit('message', newMessage);
+                // Notificar a los admins
+                adminSockets.forEach(adminSocketId => {
+                    io.to(adminSocketId).emit('message', newMessage);
+                });
             } catch (error) {
-                console.error("Error al enviar mensaje:", error);
-                socket.emit("error", { message: "Error al procesar el mensaje" });
+                console.error('Error:', error);
+                socket.emit('error', { message: error.message });
             }
         });
 
-        // Manejar desconexión
+        // Manejar la desconexión del usuario
         socket.on('disconnect', () => {
-            console.log(`Usuario desconectado: ${userId}`);
+            console.log(`Usuario con ID ${userId} desconectado`);
+            connectedUsers.delete(userId);
             if (isAdmin) {
                 adminSockets.delete(socket.id);
-                console.log('Admin desconectado:', socket.id);
             }
-            connectedUsers.delete(userId);
-            console.log('Usuarios conectados:', connectedUsers.size);
-            console.log('Admins conectados:', adminSockets.size);
-        });
-
-        // Manejar errores
-        socket.on('error', (error) => {
-            console.error('Error de socket:', error);
         });
     });
 };

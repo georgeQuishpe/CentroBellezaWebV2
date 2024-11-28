@@ -12,13 +12,27 @@ export function AdminChat() {
     messages,
     connected,
     userId,
+    isAdmin, // Agregar aquí
   } = useChat();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [unreadCounts, setUnreadCounts] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChatSelect = (chatUserId) => {
+  const handleChatSelect = async (chatUserId) => {
     selectChat(chatUserId);
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/v1/chat-messages?userId=${chatUserId}`
+      );
+      const chatMessages = await response.json();
+      setMessages(chatMessages);
+    } catch (error) {
+      console.error("Error al cargar mensajes:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Agrupar mensajes por usuario y contar no leídos
@@ -38,13 +52,12 @@ export function AdminChat() {
   );
 
   // Filtrar mensajes para el chat seleccionado
-  const filteredMessages = messages.filter(
-    (message) =>
-      message.usuarioId === selectedUserId ||
-      message.toUserId === selectedUserId ||
-      (message.usuarioId.startsWith("admin_") &&
-        message.toUserId === selectedUserId)
-  );
+  const filteredMessages = isAdmin
+    ? messages.filter(
+        (msg) =>
+          msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+      )
+    : messages;
 
   return (
     <div className="flex h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">

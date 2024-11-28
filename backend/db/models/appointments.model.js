@@ -1,15 +1,17 @@
 const { Model, DataTypes } = require('sequelize');
 
-const APPOINTMENT_TB = 'citas';
-
 class Appointment extends Model {
     static config(sequelize) {
         return {
             sequelize,
-            tableName: APPOINTMENT_TB,
+            tableName: 'citas',
             modelName: 'Appointment',
             timestamps: false
         }
+    }
+
+    static associate(models) {
+        this.belongsTo(models.Service, { foreignKey: 'servicioId', as: 'servicio' });
     }
 }
 
@@ -48,11 +50,11 @@ const AppointmentSchema = {
     },
     estado: {
         type: DataTypes.STRING(20),
-        allowNull: true,
+        allowNull: false,
         validate: {
-            isIn: [['Pendiente', 'Confirmada', 'Cancelada']]
+            isIn: [['Pendiente', 'Confirmada', 'Completada', 'Cancelada']]
         },
-        field: 'estado'
+        defaultValue: 'Pendiente'
     },
     fechaCreacion: {
         type: DataTypes.DATE,
@@ -62,4 +64,4 @@ const AppointmentSchema = {
     }
 };
 
-module.exports = {Appointment, AppointmentSchema}
+module.exports = { Appointment, AppointmentSchema }

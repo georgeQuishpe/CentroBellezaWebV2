@@ -1,15 +1,18 @@
 const { Model, DataTypes } = require('sequelize');
 
-const SERVICE_TB = 'servicios';
-
 class Service extends Model {
     static config(sequelize) {
         return {
             sequelize,
-            tableName: SERVICE_TB,
+            tableName: 'servicios',
             modelName: 'Service',
             timestamps: false
         }
+    }
+
+
+    static associate(models) {
+        this.hasMany(models.Appointment, { foreignKey: 'servicioId', as: 'citas' });
     }
 }
 
@@ -48,4 +51,4 @@ const ServiceSchema = {
     }
 };
 
-module.exports = {Service, ServiceSchema}
+module.exports = { Service, ServiceSchema }
