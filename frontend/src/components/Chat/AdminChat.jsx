@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useChat } from "../../context/ChatContext";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
@@ -11,16 +11,17 @@ export function AdminChat() {
     selectedUserId,
     connected,
     userId,
-    isAdmin, // Agregar aquí
+    isAdmin,
+    socket, // Assuming you have a socket in your ChatContext
   } = useChat();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [unreadCounts, setUnreadCounts] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState([]); // Estado para mensajes
+  const [messages, setMessages] = useState([]); 
 
-  const handleChatSelect = async (chatUserId) => {
-    selectChat(chatUserId);
+  // Fetch messages for a selected chat
+  const fetchChatMessages = useCallback(async (chatUserId) => {
     setIsLoading(true);
     try {
       const response = await fetch(
@@ -36,11 +37,50 @@ export function AdminChat() {
       setMessages(Array.isArray(chatMessages) ? chatMessages : []);
     } catch (error) {
       console.error("Error al cargar mensajes:", error);
-      setMessages([]); // Reinicia a un arreglo vacío en caso de error
+      setMessages([]); 
+    } finally {
+      setIsLoading(false);
     }
+  }, []);
+
+  // Handle chat selection
+  const handleChatSelect = async (chatUserId) => {
+    selectChat(chatUserId);
+    await fetchChatMessages(chatUserId);
   };
 
-  // Agrupar mensajes por usuario y contar no leídos
+  // Real-time message handling
+  useEffect(() => {
+    if (socket && selectedUserId) {
+      // Listen for new messages
+      const handleNewMessage = (message) => {
+        // Only add message if it's related to the current selected chat
+        if (
+          message.usuarioId === selectedUserId || 
+          message.toUserId === selectedUserId
+        ) {
+          setMessages((prevMessages) => {
+            // Prevent duplicate messages
+            const isDuplicate = prevMessages.some(
+              (m) => m.id === message.id
+            );
+            return isDuplicate 
+              ? prevMessages 
+              : [...prevMessages, message];
+          });
+        }
+      };
+
+      socket.on('new-message', handleNewMessage);
+
+      // Cleanup socket listener
+      return () => {
+        socket.off('new-message', handleNewMessage);
+      };
+    }
+  }, [socket, selectedUserId]);
+
+  // Update unread counts
   useEffect(() => {
     const counts = messages.reduce((acc, message) => {
       if (!message.leido && message.usuarioId !== userId) {
@@ -51,12 +91,11 @@ export function AdminChat() {
     setUnreadCounts(counts);
   }, [messages, userId]);
 
-  // Filtrar los chats activos según el término de búsqueda
+  // Filter chats and messages
   const filteredChats = activeChats?.filter((chat) =>
     chat.userId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Filtrar mensajes para el chat seleccionado
   const filteredMessages = Array.isArray(messages)
     ? messages.filter(
         (msg) =>
@@ -66,7 +105,7 @@ export function AdminChat() {
 
   return (
     <div className="flex h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
-      {/* Lista de chats */}
+      {/* Chat List */}
       <div className="w-1/3 border-r bg-gray-50">
         <div className="p-4 border-b">
           <input
@@ -82,29 +121,34 @@ export function AdminChat() {
             <div
               key={chat.userId}
               onClick={() => handleChatSelect(chat.userId)}
-              className={`p-4 cursor-pointer hover:bg-gray-100 ${
+              className={`p-4 font-medium text-black cursor-pointer hover:bg-gray-100 relative ${
                 selectedUserId === chat.userId ? "bg-blue-50" : ""
               }`}
             >
-              <div className="font-medium">{chat.userId}</div>
-              <div className="text-sm text-gray-500">{chat.lastMessage}</div>
+              <div className="font-bold">{chat.userId}</div>
+              <div className="text-blue-500 text-sm">{chat.lastMessage}</div>
+              {unreadCounts[chat.userId] > 0 && (
+                <span className="absolute top-2 right-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                  {unreadCounts[chat.userId]}
+                </span>
+              )}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Área de mensajes */}
+      {/* Message Area */}
       <div className="flex-1 flex flex-col">
         {selectedUserId ? (
           <>
             <div className="p-4 border-b bg-white">
-              <div className="font-medium">Chat con {selectedUserId}</div>
-              <div className="text-sm text-gray-500">
+              <div className="text-blue-500 font-bold">Chat con {selectedUserId}</div>
+              <div className="text-sm text-black">
                 {connected ? "En línea" : "Desconectado"}
               </div>
             </div>
             <div className="flex-1 overflow-y-auto">
-              <MessageList />
+              <MessageList messages={filteredMessages} />
             </div>
             <MessageInput />
           </>

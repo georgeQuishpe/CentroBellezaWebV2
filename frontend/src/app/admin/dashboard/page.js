@@ -139,80 +139,95 @@ export default function AdminDashboard() {
 
     // Actualizar servicio
     const updateService = async (serviceId) => {
-        try {
-            const serviceToUpdate = services.find(s => s.id === serviceId);
+        showConfirmation(
+            "Guardar Cambios",
+            "¿Deseas guardar los cambios realizados en este servicio?",
+            async () => {
+                try {
+                    const serviceToUpdate = services.find(s => s.id === serviceId);
 
-            const updatedData = await fetchWithAuth(
-                `http://localhost:5000/api/v1/services/${serviceId}`,
-                {
-                    method: 'PUT',
-                    body: JSON.stringify(serviceToUpdate)
+                    const updatedData = await fetchWithAuth(
+                        `http://localhost:5000/api/v1/services/${serviceId}`,
+                        {
+                            method: 'PUT',
+                            body: JSON.stringify(serviceToUpdate)
+                        }
+                    );
+
+                    setServices(services.map(service =>
+                        service.id === serviceId ? updatedData : service
+                    ));
+                    setSuccess('Servicio actualizado exitosamente.');
+                    setEditingService(null);
+                } catch (err) {
+                    setError(err.message);
                 }
-            );
-
-            setServices(services.map(service =>
-                service.id === serviceId ? updatedData : service
-            ));
-            setSuccess('Servicio actualizado exitosamente.');
-            setEditingService(null);
-        } catch (err) {
-            setError(err.message);
-        }
+            })
     };
 
     // Eliminar servicio
     const deleteService = async (id) => {
-        try {
-            const userData = JSON.parse(localStorage.getItem('user'));
-            if (!userData || !userData.token) {
-                throw new Error('No hay sesión activa');
-            }
+        showConfirmation(
+            "Eliminar Servicio",
+            "¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.",
+            async () => {
+                try {
+                    const userData = JSON.parse(localStorage.getItem('user'));
+                    if (!userData || !userData.token) {
+                        throw new Error('No hay sesión activa');
+                    }
 
-            const response = await fetch(`http://localhost:5000/api/v1/services/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${userData.token}`,
-                    'Content-Type': 'application/json'
+                    const response = await fetch(`http://localhost:5000/api/v1/services/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${userData.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'No se pudo eliminar el servicio.');
+                    }
+
+                    setServices(services.filter((service) => service.id !== id));
+                    setSuccess('Servicio eliminado exitosamente.');
+                } catch (err) {
+                    setError(err.message);
+                    console.error('Error al eliminar servicio:', err);
                 }
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'No se pudo eliminar el servicio.');
-            }
-
-            setServices(services.filter((service) => service.id !== id));
-            setSuccess('Servicio eliminado exitosamente.');
-        } catch (err) {
-            setError(err.message);
-            console.error('Error al eliminar servicio:', err);
-        }
+            })
     };
 
     // Modificar rol de usuario
     const updateUserRole = async (userId, newRole) => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/v1/users/${userId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rol: newRole }),
-            });
+        showConfirmation(
+            "Cambiar Rol de Usuario",
+            `¿Estás seguro de que deseas cambiar el rol del usuario a ${newRole}?`,
+            async () => {
+                try {
+                    const response = await fetch(`http://localhost:5000/api/v1/users/${userId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ rol: newRole }),
+                    });
 
-            if (!response.ok) {
-                throw new Error('No se pudo actualizar el rol.');
-            }
+                    if (!response.ok) {
+                        throw new Error('No se pudo actualizar el rol.');
+                    }
 
-            const updatedUsers = users.map(user =>
-                user.id === userId ? { ...user, rol: newRole } : user
-            );
+                    const updatedUsers = users.map(user =>
+                        user.id === userId ? { ...user, rol: newRole } : user
+                    );
 
-            setUsers(updatedUsers);
-            setSuccess('Rol de usuario actualizado exitosamente.');
-            setEditingUser(null);
-        } catch (err) {
-            setError(err.message);
-            console.error('Error updating user role:', err);
-        }
+                    setUsers(updatedUsers);
+                    setSuccess('Rol de usuario actualizado exitosamente.');
+                    setEditingUser(null);
+                } catch (err) {
+                    setError(err.message);
+                    console.error('Error updating user role:', err);
+                }
+            })
     };
 
     if (!mounted || !user) {
@@ -223,7 +238,7 @@ export default function AdminDashboard() {
         <div className="min-h-screen bg-gray-100 p-8">
             <div className="max-w-6xl mx-auto">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">Panel de {user?.rol}</h1>
+                    <h1 className="text-blue-500 text-2xl font-bold">Panel de {user?.rol}</h1>
                     <button
                         onClick={handleLogout}
                         className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -553,28 +568,22 @@ function AppointmentManager() {
     };
 
     const handleEditAppointment = async (appointmentData) => {
-        showConfirmation(
-            "Modificar Cita",
-            "¿Estás seguro de que deseas modificar esta cita?",
-            async () => {
-                try {
-                    const response = await fetch(`http://localhost:5000/api/v1/appointments/${appointmentData.id}`, {
-                        method: "PUT",
-                        headers: getAuthHeaders(),
-                        body: JSON.stringify(appointmentData),
-                    });
+        try {
+            const response = await fetch(`http://localhost:5000/api/v1/appointments/${appointmentData.id}`, {
+                method: "PUT",
+                headers: getAuthHeaders(),
+                body: JSON.stringify(appointmentData),
+            });
 
-                    if (!response.ok) throw new Error("Error al actualizar la cita");
-                    setShowEditModal(false);
-                    fetchAppointments(); // Recargar citas
-                } catch (error) {
-                    console.error("Error:", error);
-                    alert("Error al actualizar la cita");
-                }
-            }
-        );
+            if (!response.ok) throw new Error("Error al actualizar la cita");
+            setShowEditModal(false);
+            fetchAppointments(); // Recargar citas
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error al actualizar la cita");
+        }
     };
-
+    
     const handleDeleteAppointment = async (id) => {
         showConfirmation(
             "Eliminar Cita",
@@ -682,12 +691,12 @@ function AppointmentManager() {
                                         </select>
                                     </td>
                                     <td className="text-black px-6 py-4 whitespace-nowrap">
-                                        <button
+                                        {/* <button
                                             onClick={() => handleEditAppointment(appointment)}
                                             className="text-blue-600 hover:text-blue-900 mr-2"
                                         >
                                             Editar
-                                        </button>
+                                        </button> */}
                                         <button
                                             onClick={() => handleDeleteAppointment(appointment.id)}
                                             className="text-red-600 hover:text-red-900"
