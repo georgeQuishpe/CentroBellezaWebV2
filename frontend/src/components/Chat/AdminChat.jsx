@@ -9,7 +9,6 @@ export function AdminChat() {
     activeChats,
     selectChat,
     selectedUserId,
-    messages,
     connected,
     userId,
     isAdmin, // Agregar aquí
@@ -18,6 +17,7 @@ export function AdminChat() {
   const [searchTerm, setSearchTerm] = useState("");
   const [unreadCounts, setUnreadCounts] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState([]); // Estado para mensajes
 
   const handleChatSelect = async (chatUserId) => {
     selectChat(chatUserId);
@@ -26,12 +26,17 @@ export function AdminChat() {
       const response = await fetch(
         `http://localhost:5000/api/v1/chat-messages?userId=${chatUserId}`
       );
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Error al obtener mensajes: ${response.status} - ${errorText}`
+        );
+      }
       const chatMessages = await response.json();
-      setMessages(chatMessages);
+      setMessages(Array.isArray(chatMessages) ? chatMessages : []);
     } catch (error) {
       console.error("Error al cargar mensajes:", error);
-    } finally {
-      setIsLoading(false);
+      setMessages([]); // Reinicia a un arreglo vacío en caso de error
     }
   };
 
@@ -52,12 +57,12 @@ export function AdminChat() {
   );
 
   // Filtrar mensajes para el chat seleccionado
-  const filteredMessages = isAdmin
+  const filteredMessages = Array.isArray(messages)
     ? messages.filter(
         (msg) =>
           msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
       )
-    : messages;
+    : [];
 
   return (
     <div className="flex h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">

@@ -1,3 +1,4 @@
+// chatMessages.model.js
 const { Model, DataTypes } = require('sequelize');
 
 const CHAT_MESSAGES_TB = 'chatmensajes';
@@ -19,32 +20,25 @@ const ChatMessageSchema = {
         autoIncrement: true,
         primaryKey: true,
         allowNull: false,
-        field: 'id',
     },
     usuarioId: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING(50), // Cambiar de INTEGER a STRING
         allowNull: false,
         references: {
-            model: 'usuarios', // En minúsculas para PostgreSQL
+            model: 'usuarios',
             key: 'id'
         },
         onDelete: 'CASCADE',
-        field: 'usuarioid',
+        field: 'usuarioid'
     },
     toUserId: {
         type: DataTypes.STRING(50),
         allowNull: true,
-        references: {
-            model: 'usuarios', // También referencia a usuarios
-            key: 'id'
-        },
-        onDelete: 'SET NULL',
         field: 'touserid',
     },
     mensaje: {
         type: DataTypes.TEXT,
         allowNull: false,
-        field: 'mensaje',
     },
     fechaEnvio: {
         type: DataTypes.DATE,
@@ -53,9 +47,7 @@ const ChatMessageSchema = {
     },
     leido: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
         defaultValue: false,
-        field: 'leido',
     },
 };
 

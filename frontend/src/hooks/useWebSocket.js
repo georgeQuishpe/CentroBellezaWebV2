@@ -38,23 +38,6 @@ export const useWebSocket = (userId, isAdmin = false) => {
 
         socketRef.current.on("previousMessages", (previousMessages) => {
             console.log("Mensajes históricos recibidos:", previousMessages);
-            if (isAdmin && Array.isArray(previousMessages)) {
-                // Agrupar mensajes por usuario
-                const chatsByUser = previousMessages.reduce((acc, msg) => {
-                    if (!msg.usuarioId.startsWith('admin_')) {
-                        if (!acc[msg.usuarioId]) {
-                            acc[msg.usuarioId] = {
-                                userId: msg.usuarioId,
-                                nombre: `Usuario ${msg.usuarioId}`,
-                                lastMessage: msg.mensaje,
-                                timestamp: msg.fechaEnvio
-                            };
-                        }
-                    }
-                    return acc;
-                }, {});
-                setActiveChats(Object.values(chatsByUser));
-            }
             setMessages(previousMessages || []);
         });
 
@@ -68,6 +51,13 @@ export const useWebSocket = (userId, isAdmin = false) => {
             setError(err.message);
         });
 
+        socketRef.current.on("activeChats", (chats) => {
+            if (isAdmin) {
+                console.log("Chats activos recibidos:", chats);
+                setActiveChats(chats || []);
+            }
+        });
+
         // Cleanup al desmontar
         return () => {
             console.log("Desconectando WebSocket...");
@@ -79,27 +69,17 @@ export const useWebSocket = (userId, isAdmin = false) => {
 
 
     // Función para enviar mensajes
+    // En useWebSocket.js (frontend)
     const sendMessage = (content) => {
-        if (!content.trim() || !connected) return;
+        if (!content.trim() || !connected || (isAdmin && !selectedUserId)) return;
 
         const messageData = {
             content,
             userId,
-            timestamp: new Date().toISOString()
+            toUserId: isAdmin ? selectedUserId : 'admin'
         };
 
-        if (isAdmin) {
-            if (!selectedUserId) {
-                console.warn("Debe seleccionar un usuario para enviar mensaje");
-                return;
-            }
-            messageData.toUserId = selectedUserId;
-        } else {
-            messageData.toUserId = "admin";
-        }
-
-        console.log("Enviando mensaje:", messageData);
-        socketRef.current.emit("sendMessage", messageData);
+        socketRef.current.emit('sendMessage', messageData);
     };
 
 
@@ -131,16 +111,18 @@ export const useWebSocket = (userId, isAdmin = false) => {
     }, []);
 
     // Función para seleccionar un chat
-    const selectChat = useCallback(
-        async (newSelectedUserId) => {
-            console.log("Seleccionando chat:", newSelectedUserId);
-            setSelectedUserId(newSelectedUserId);
-            if (isAdmin && newSelectedUserId) {
-                await loadChatMessages(newSelectedUserId);
+    const selectChat = useCallback(async (newSelectedUserId) => {
+        setSelectedUserId(newSelectedUserId);
+        if (isAdmin && newSelectedUserId) {
+            try {
+                const response = await fetch(`http://localhost:5000/api/v1/chat-messages/${newSelectedUserId}`);
+                const messages = await response.json();
+                setMessages(messages);
+            } catch (error) {
+                console.error('Error cargando mensajes:', error);
             }
-        },
-        [isAdmin, loadChatMessages]
-    );
+        }
+    }, [isAdmin]);
 
     return {
         connected,

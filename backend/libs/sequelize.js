@@ -16,7 +16,8 @@ const sequelize = new Sequelize({
             require: true, //Antes era TRUE
             rejectUnauthorized: false
         }
-    }
+    },
+    logging: console.log // Puedes desactivarlo si lo deseas
 });
 
 sequelize.sync({ force: false, alter: false });
@@ -25,4 +26,4 @@ setupModels(sequelize);
 console.log(sequelize.models);
 
 
-module.exports = sequelize;
+module.exports = { sequelize, models: sequelize.models };

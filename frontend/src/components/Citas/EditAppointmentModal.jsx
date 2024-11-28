@@ -27,14 +27,47 @@ export function EditAppointmentModal({
     }
   }, [appointment]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave({
-      ...appointment,
-      fecha: `${formData.fecha}T${formData.hora}`,
-      servicioId: formData.servicioId,
-      estado: formData.estado,
-    });
+    try {
+      const userData = JSON.parse(localStorage.getItem("user"));
+      if (!userData || !userData.token) {
+        throw new Error("No hay sesión activa");
+      }
+
+      const appointmentData = {
+        fecha: selectedDate,
+        servicioId: selectedService,
+        usuarioId: userData.id, // Asegúrate de incluir el ID del usuario
+        estado: "Pendiente",
+      };
+
+      const response = await fetch(
+        "http://localhost:5000/api/v1/appointments",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${userData.token}`, // Añadir el token aquí
+          },
+          body: JSON.stringify(appointmentData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al crear la cita");
+      }
+
+      const data = await response.json();
+
+      // Manejar la respuesta exitosa
+      setSuccess("Cita agendada exitosamente");
+      // Limpiar el formulario o redirigir según necesites
+    } catch (error) {
+      console.error("Error al agendar cita:", error);
+      setError(error.message || "No se pudo agendar la cita");
+    }
   };
 
   if (!isOpen) return null;

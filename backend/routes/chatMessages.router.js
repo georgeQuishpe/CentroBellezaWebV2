@@ -27,6 +27,21 @@ router.get('/:userId', async (req, res) => {
     }
 });
 
+router.get("/user/:userId", async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const appointments = await Appointment.findAll({
+            where: { usuarioId: userId },
+            include: [{ association: "servicio" }, { association: "usuario" }],
+        });
+
+        res.json(appointments); // Devuelve un arreglo, aunque esté vacío
+    } catch (error) {
+        console.error("Error al obtener citas:", error);
+        res.status(500).json({ error: "Error al obtener citas" });
+    }
+});
+
 router.post('/', async (req, res) => {
     try {
         const newMessage = await service.create(req.body);

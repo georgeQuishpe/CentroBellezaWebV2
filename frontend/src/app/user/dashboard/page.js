@@ -69,6 +69,12 @@ export default function UserDashboard() {
         setAvailableHours([]); // Limpia los horarios al cambiar la fecha
 
         try {
+            
+            const userData = JSON.parse(localStorage.getItem('user'));
+            if (!userData || !userData.token) {
+                throw new Error('No hay sesión activa');
+            }
+
             const response = await fetch(`http://localhost:5000/api/v1/appointments/available/${date}`);
             if (!response.ok) {
                 throw new Error("Error al obtener horas disponibles");
@@ -88,33 +94,6 @@ export default function UserDashboard() {
         }
     };
 
-    const handleReservation = async () => {
-        if (!selectedDate || !selectedTime || !selectedService) {
-            alert("Por favor selecciona un servicio, fecha y horario.");
-            return;
-        }
-
-        try {
-            const response = await fetch("http://localhost:5000/api/v1/appointments", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    usuarioId: user.id,
-                    servicioId: selectedService,
-                    fecha: `${selectedDate}T${selectedTime}`,
-                }),
-            });
-
-            if (response.ok) {
-                alert("Cita reservada exitosamente.");
-            } else {
-                alert("Error al reservar la cita.");
-            }
-        } catch (error) {
-            console.error("Error al reservar cita:", error);
-        }
-    };
-
     const handleServiceSelect = (service) => {
         setSelectedService(service.id);
         setSelectedServiceData(service); // Guardamos toda la información del servicio
@@ -127,10 +106,17 @@ export default function UserDashboard() {
         }
 
         try {
+            // Obtener el token del localStorage
+            const userData = JSON.parse(localStorage.getItem('user'));
+            if (!userData || !userData.token) {
+                throw new Error('No hay sesión activa');
+            }
+
             const response = await fetch("http://localhost:5000/api/v1/appointments", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${userData.token}` // Añadir el token aquí
                 },
                 body: JSON.stringify({
                     usuarioId: user.id,
@@ -147,14 +133,18 @@ export default function UserDashboard() {
                 setSelectedServiceData(null);
                 setSelectedDate("");
                 setSelectedTime("");
-                setAppointmentsKey(prev => prev + 1);
+
+                // Opcional: Recargar las citas del usuario
+                if (typeof window !== 'undefined') {
+                    window.location.reload();
+                }
             } else {
                 const error = await response.json();
-                alert(`Error: ${error.message}`);
+                throw new Error(error.message || 'Error al reservar la cita');
             }
         } catch (error) {
             console.error("Error al reservar cita:", error);
-            alert("Error al procesar la reservación.");
+            alert(error.message || "Error al procesar la reservación.");
         }
     };
 

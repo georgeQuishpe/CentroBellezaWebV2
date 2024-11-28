@@ -5,10 +5,20 @@ import { AdminChat } from '../../../components/Chat/AdminChat';
 import { ChatProvider } from '../../../context/ChatContext';
 import { EditAppointmentModal } from "../../../components/Citas/EditAppointmentModal"
 import { ConfirmationModal } from '../../../components/ConfirmationModal';
+import { useAuth } from '../../../hooks/useAuth';  // Añade esta línea
+import { useAuthFetch } from '../../../hooks/useAuthFetch';  // Añade esta línea
+
 export default function AdminDashboard() {
     const router = useRouter();
-    const [user, setUser] = useState(null); // Movido arriba
+    const { user, loading } = useAuth();
+    const { fetchWithAuth } = useAuthFetch();
 
+    const [confirmationModal, setConfirmationModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: null
+    });
     const [mounted, setMounted] = useState(false);
     const [services, setServices] = useState([]);
     const [users, setUsers] = useState([]);
@@ -31,21 +41,13 @@ export default function AdminDashboard() {
     // Efecto para cargar datos (combinado con autenticación)
     useEffect(() => {
         const initializeAdmin = async () => {
+
+            if (!user || user.rol !== 'Admin') {
+                router.push('/login');
+                return;
+            }
+
             try {
-                const userData = localStorage.getItem('user');
-                if (!userData) {
-                    router.push('/login');
-                    return;
-                }
-
-                const parsedUser = JSON.parse(userData);
-                if (parsedUser.rol !== 'Admin') {
-                    router.push('/user/dashboard');
-                    return;
-                }
-
-                setUser(parsedUser);
-
                 // Cargar datos solo si es admin
                 const [servicesResponse, usersResponse] = await Promise.all([
                     fetch('http://localhost:5000/api/v1/services'),
@@ -70,16 +72,18 @@ export default function AdminDashboard() {
             }
         };
 
-        initializeAdmin();
-    }, [router]); // Solo depende del router
+        if (!loading) {
+            initializeAdmin();
+        }
+    }, [user, loading, router]);
 
+    if (loading || !mounted) {
+        return <div>Cargando...</div>;
+    }
 
-    const [confirmationModal, setConfirmationModal] = useState({
-        isOpen: false,
-        title: '',
-        message: '',
-        onConfirm: null
-    });
+    if (!user || user.rol !== 'Admin') {
+        return null;
+    }
 
     // Función para mostrar el modal de confirmación
     const showConfirmation = (title, message, onConfirm) => {
@@ -98,14 +102,23 @@ export default function AdminDashboard() {
     const createService = async (e) => {
         e.preventDefault();
         try {
+            const userData = JSON.parse(localStorage.getItem('user'));
+            if (!userData || !userData.token) {
+                throw new Error('No hay sesión activa');
+            }
+
             const response = await fetch('http://localhost:5000/api/v1/services', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userData.token}`
+                },
                 body: JSON.stringify(newService),
             });
 
             if (!response.ok) {
-                throw new Error('No se pudo crear el servicio.');
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'No se pudo crear el servicio.');
             }
 
             const createdService = await response.json();
@@ -114,90 +127,86 @@ export default function AdminDashboard() {
             setSuccess('Servicio creado exitosamente.');
         } catch (err) {
             setError(err.message);
+            console.error('Error al crear servicio:', err);
         }
     };
 
     // Actualizar servicio
     const updateService = async (serviceId) => {
-        showConfirmation(
-            "Guardar Cambios",
-            "¿Deseas guardar los cambios realizados en este servicio?",
-            async () => {
-                try {
-                    const serviceToUpdate = services.find(s => s.id === serviceId);
-                    const response = await fetch(`http://localhost:5000/api/v1/services/${serviceId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(serviceToUpdate),
-                    });
+        try {
+            const serviceToUpdate = services.find(s => s.id === serviceId);
 
-                    if (!response.ok) {
-                        throw new Error('No se pudo actualizar el servicio.');
-                    }
-
-                    setSuccess('Servicio actualizado exitosamente.');
-                    setEditingService(null);
-                } catch (err) {
-                    setError(err.message);
+            const updatedData = await fetchWithAuth(
+                `http://localhost:5000/api/v1/services/${serviceId}`,
+                {
+                    method: 'PUT',
+                    body: JSON.stringify(serviceToUpdate)
                 }
-            }
-        );
+            );
+
+            setServices(services.map(service =>
+                service.id === serviceId ? updatedData : service
+            ));
+            setSuccess('Servicio actualizado exitosamente.');
+            setEditingService(null);
+        } catch (err) {
+            setError(err.message);
+        }
     };
 
     // Eliminar servicio
     const deleteService = async (id) => {
-        showConfirmation(
-            "Eliminar Servicio",
-            "¿Estás seguro de que deseas eliminar este servicio? Esta acción no se puede deshacer.",
-            async () => {
-                try {
-                    const response = await fetch(`http://localhost:5000/api/v1/services/${id}`, {
-                        method: 'DELETE',
-                    });
-
-                    if (!response.ok) {
-                        throw new Error('No se pudo eliminar el servicio.');
-                    }
-
-                    setServices(services.filter((service) => service.id !== id));
-                    setSuccess('Servicio eliminado exitosamente.');
-                } catch (err) {
-                    setError(err.message);
-                }
+        try {
+            const userData = JSON.parse(localStorage.getItem('user'));
+            if (!userData || !userData.token) {
+                throw new Error('No hay sesión activa');
             }
-        );
+
+            const response = await fetch(`http://localhost:5000/api/v1/services/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${userData.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'No se pudo eliminar el servicio.');
+            }
+
+            setServices(services.filter((service) => service.id !== id));
+            setSuccess('Servicio eliminado exitosamente.');
+        } catch (err) {
+            setError(err.message);
+            console.error('Error al eliminar servicio:', err);
+        }
     };
 
     // Modificar rol de usuario
-const updateUserRole = async (userId, newRole) => {
-        showConfirmation(
-            "Cambiar Rol de Usuario",
-            `¿Estás seguro de que deseas cambiar el rol del usuario a ${newRole}?`,
-            async () => {
-                try {
-                    const response = await fetch(`http://localhost:5000/api/v1/users/${userId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ rol: newRole }),
-                    });
+    const updateUserRole = async (userId, newRole) => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/v1/users/${userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rol: newRole }),
+            });
 
-                    if (!response.ok) {
-                        throw new Error('No se pudo actualizar el rol.');
-                    }
-
-                    const updatedUsers = users.map(user =>
-                        user.id === userId ? { ...user, rol: newRole } : user
-                    );
-
-                    setUsers(updatedUsers);
-                    setSuccess('Rol de usuario actualizado exitosamente.');
-                    setEditingUser(null);
-                } catch (err) {
-                    setError(err.message);
-                    console.error('Error updating user role:', err);
-                }
+            if (!response.ok) {
+                throw new Error('No se pudo actualizar el rol.');
             }
-        );
+
+            const updatedUsers = users.map(user =>
+                user.id === userId ? { ...user, rol: newRole } : user
+            );
+
+            setUsers(updatedUsers);
+            setSuccess('Rol de usuario actualizado exitosamente.');
+            setEditingUser(null);
+        } catch (err) {
+            setError(err.message);
+            console.error('Error updating user role:', err);
+        }
     };
 
     if (!mounted || !user) {
@@ -492,6 +501,14 @@ function AppointmentManager() {
         onConfirm: null
     });
 
+    const getAuthHeaders = () => {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userData?.token}`
+        };
+    };
+
     useEffect(() => {
         fetchAppointments();
         fetchServices();
@@ -511,7 +528,10 @@ function AppointmentManager() {
 
     const fetchServices = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/v1/services');
+            const response = await fetch("http://localhost:5000/api/v1/services", {
+                headers: getAuthHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar servicios');
             const data = await response.json();
             setServices(data);
         } catch (error) {
@@ -526,20 +546,17 @@ function AppointmentManager() {
             async () => {
                 try {
                     const response = await fetch(`http://localhost:5000/api/v1/appointments/${appointmentData.id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(appointmentData)
+                        method: "PUT",
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify(appointmentData),
                     });
 
-                    if (response.ok) {
-                        setShowEditModal(false);
-                        fetchAppointments();
-                    } else {
-                        throw new Error('Error al actualizar la cita');
-                    }
+                    if (!response.ok) throw new Error("Error al actualizar la cita");
+                    setShowEditModal(false);
+                    fetchAppointments(); // Recargar citas
                 } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error al actualizar la cita');
+                    console.error("Error:", error);
+                    alert("Error al actualizar la cita");
                 }
             }
         );
@@ -552,29 +569,33 @@ function AppointmentManager() {
             async () => {
                 try {
                     const response = await fetch(`http://localhost:5000/api/v1/appointments/${id}`, {
-                        method: 'DELETE'
+                        method: "DELETE",
+                        headers: getAuthHeaders()
                     });
 
-                    if (response.ok) {
-                        fetchAppointments();
-                    } else {
-                        throw new Error('Error al eliminar la cita');
-                    }
+                    if (!response.ok) throw new Error("Error al eliminar la cita");
+                    fetchAppointments(); // Recargar citas
                 } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error al eliminar la cita');
+                    console.error("Error:", error);
+                    alert("Error al eliminar la cita");
                 }
+
             }
         );
     };
 
     const fetchAppointments = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/v1/appointments');
+            const response = await fetch("http://localhost:5000/api/v1/appointments", {
+                headers: getAuthHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar citas');
             const data = await response.json();
-            setAppointments(data);
+            console.log("Fetched appointments:", data);
+            setAppointments(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error('Error al cargar citas:', error);
+            console.error("Error al cargar citas:", error);
+            setAppointments([]); // Si ocurre un error, aseguramos que sea un arreglo vacío
         } finally {
             setLoading(false);
         }
@@ -587,19 +608,24 @@ function AppointmentManager() {
             async () => {
                 try {
                     const response = await fetch(`http://localhost:5000/api/v1/appointments/${appointmentId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ estado: newStatus })
+                        method: "PUT",
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ estado: newStatus }),
                     });
-                    if (response.ok) {
-                        fetchAppointments();
-                    }
+
+                    if (!response.ok) throw new Error("Error al actualizar el estado");
+                    fetchAppointments();
                 } catch (error) {
-                    console.error('Error al actualizar cita:', error);
+                    console.error("Error al actualizar cita:", error);
+                    alert("Error al actualizar el estado de la cita");
                 }
             }
         );
     };
+
+    if (loading) {
+        return <div>Cargando citas...</div>;
+    }
 
     return (
         <div className="bg-white rounded-lg shadow p-6">

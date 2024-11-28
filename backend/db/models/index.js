@@ -11,25 +11,11 @@ function setupModels(sequelize) {
     ChatMessage.init(ChatMessageSchema, ChatMessage.config(sequelize));
 
     // Asociaciones
-    User.hasMany(ChatMessage, {
-        as: 'mensajesEnviados',
-        foreignKey: 'usuarioId'
-    });
+    User.hasMany(ChatMessage, { as: 'mensajesEnviados', foreignKey: 'usuarioId' });
+    User.hasMany(ChatMessage, { as: 'mensajesRecibidos', foreignKey: 'toUserId' });
 
-    User.hasMany(ChatMessage, {
-        as: 'mensajesRecibidos',
-        foreignKey: 'toUserId'
-    });
-
-    ChatMessage.belongsTo(User, {
-        as: 'remitente',
-        foreignKey: 'usuarioId'
-    });
-
-    ChatMessage.belongsTo(User, {
-        as: 'destinatario',
-        foreignKey: 'toUserId'
-    });
+    ChatMessage.belongsTo(User, { as: 'remitente', foreignKey: 'usuarioId' });
+    ChatMessage.belongsTo(User, { as: 'destinatario', foreignKey: 'toUserId' });
 
     // Otras asociaciones existentes
     Service.hasMany(Appointment, {

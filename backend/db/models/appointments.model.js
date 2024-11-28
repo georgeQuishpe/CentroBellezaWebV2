@@ -11,7 +11,16 @@ class Appointment extends Model {
     }
 
     static associate(models) {
-        this.belongsTo(models.Service, { foreignKey: 'servicioId', as: 'servicio' });
+        // Asociación con Usuario
+        this.belongsTo(models.User, {
+            as: 'usuario',
+            foreignKey: 'usuarioId'
+        });
+        // Asociación con Servicio
+        this.belongsTo(models.Service, {
+            as: 'servicio',
+            foreignKey: 'servicioId'
+        });
     }
 }
 
@@ -46,7 +55,14 @@ const AppointmentSchema = {
     fecha: {
         type: DataTypes.DATE,
         allowNull: false,
-        field: 'fecha'
+        validate: {
+            isDate: true,
+            isFuture(value) {
+                if (value < new Date()) {
+                    throw new Error('La fecha de la cita debe ser futura');
+                }
+            }
+        }
     },
     estado: {
         type: DataTypes.STRING(20),

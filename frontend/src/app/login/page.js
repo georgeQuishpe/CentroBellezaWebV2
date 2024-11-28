@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { authService } from '../../services/authService'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -28,9 +29,8 @@ export default function LoginPage() {
         throw new Error(data.message || 'Error al iniciar sesión')
       }
 
-      // Guardar en localStorage y cookie
-      localStorage.setItem('user', JSON.stringify(data));
-      document.cookie = `user=${JSON.stringify(data)}; path=/; max-age=86400`; // Expira en 24 horas
+      // Usar el servicio de autenticación
+      authService.setAuth(data);
 
       // Modificar la parte de redirección
       if (data.rol === 'Admin') {
