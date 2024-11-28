@@ -15,6 +15,7 @@ export default function UserDashboard() {
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedTime, setSelectedTime] = useState("");
     const [selectedServiceData, setSelectedServiceData] = useState(null); // Nuevo estado
+    const [appointmentsKey, setAppointmentsKey] = useState(0);
 
     // Efecto para la hidratación
     useEffect(() => {
@@ -146,6 +147,7 @@ export default function UserDashboard() {
                 setSelectedServiceData(null);
                 setSelectedDate("");
                 setSelectedTime("");
+                setAppointmentsKey(prev => prev + 1);
             } else {
                 const error = await response.json();
                 alert(`Error: ${error.message}`);
@@ -243,7 +245,6 @@ export default function UserDashboard() {
                         <ChatWindow isAdmin={false} />
                     </ChatProvider>
                 </div>
-
                 <UserAppointments userId={user.id} />
             </div>
         </div>

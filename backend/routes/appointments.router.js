@@ -9,6 +9,6 @@ router
     .get('/user/:userId', appointmentsController.getByUser) // Asegúrate de que exista este controlador
     .post('/', appointmentsController.create)
     .put('/:id', appointmentsController.update)
-    .delete('/:id', appointmentsController.remove);
+    .delete('/:id/:userId', appointmentsController.remove);
 
 module.exports = router;

@@ -50,7 +50,7 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
     try {
-        const response = await service.delete(req.params.id);
+        const response = await service.delete(req.params.id, req.params.userId);
         res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });
