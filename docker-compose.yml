@@ -1,0 +1,137 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build: ./backend/api-gateway
+    container_name: api-gateway
+    ports:
+      - "5000:5000" 
+    depends_on:
+      - ms-auth
+      - ms-services
+      - ms-appointments
+      - ms-messages
+    networks:
+      - microservicios-network
+
+  # Microservicio auth
+  ms-auth:
+    build: ./backend/ms-auth
+    container_name: ms-auth
+    ports:
+      - "5001:5000"
+    depends_on:
+      - db-auth
+    environment:
+      DB_HOST: db-auth
+      DB_USER: sa
+      DB_PASSWORD: "ProyectoWenAvanzadasIIB"
+      DB_NAME: auth_db
+    networks:
+      - microservicios-network
+
+  db-auth:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: db-auth
+    environment:
+      SA_PASSWORD: "ProyectoWenAvanzadasIIB"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./base-de-datos/scripts/init-auth.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservicios-network
+
+
+  # Microservicio services
+  ms-services:
+    build: ./backend/ms-services
+    container_name: ms-services
+    ports:
+      - "5002:5000"
+    depends_on:
+      - db-services
+    environment:
+      DB_HOST: db-services
+      DB_USER: sa
+      DB_PASSWORD: "ProyectoWenAvanzadasIIB"
+      DB_NAME: servicios_db
+    networks:
+      - microservicios-network
+
+  db-services:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: db-services
+    environment:
+      SA_PASSWORD: "ProyectoWenAvanzadasIIB"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1434:1433"
+    volumes:
+      - ./base-de-datos/scripts/init-services.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservicios-network
+
+  
+  # Microservicio appointments
+  ms-appointments:
+    build: ./backend/ms-appointments
+    container_name: ms-appointments
+    ports:
+      - "5003:5000"
+    depends_on:
+      - db-appointments
+    environment:
+      DB_HOST: db-appointments
+      DB_USER: sa
+      DB_PASSWORD: "ProyectoWenAvanzadasIIB"
+      DB_NAME: citas_db
+    networks:
+      - microservicios-network
+
+  db-appointments:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: db-appointments
+    environment:
+      SA_PASSWORD: "ProyectoWenAvanzadasIIB"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1435:1433"
+    volumes:
+      - ./base-de-datos/scripts/init-appointments.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservicios-network
+
+  
+  # Microservicio messages
+  ms-messages:
+    build: ./backend/ms-messages
+    container_name: ms-messages
+    ports:
+      - "5004:5000"
+    depends_on:
+      - db-messages
+    environment:
+      DB_HOST: db-messages
+      DB_USER: sa
+      DB_PASSWORD: "ProyectoWenAvanzadasIIB"
+      DB_NAME: chat_db
+    networks:
+      - microservicios-network
+
+  db-messages:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: db-messages
+    environment:
+      SA_PASSWORD: "ProyectoWenAvanzadasIIB"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1436:1433"
+    volumes:
+      - ./base-de-datos/scripts/init-db1.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservicios-network
+
+ 
