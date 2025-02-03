@@ -17,7 +17,7 @@ services:
 
   # Microservicio auth
   ms-auth:
-    build: ./backend/ms-auth
+    build: ./backend/microservices/ms-auth
     container_name: ms-auth
     ports:
       - "5001:5000"
@@ -47,7 +47,7 @@ services:
 
   # Microservicio services
   ms-services:
-    build: ./backend/ms-services
+    build: ./backend/microservices/ms-services
     container_name: ms-services
     ports:
       - "5002:5000"
@@ -77,7 +77,7 @@ services:
   
   # Microservicio appointments
   ms-appointments:
-    build: ./backend/ms-appointments
+    build: ./backend/microservices/ms-appointments
     container_name: ms-appointments
     ports:
       - "5003:5000"
@@ -107,7 +107,7 @@ services:
   
   # Microservicio messages
   ms-messages:
-    build: ./backend/ms-messages
+    build: ./backend/microservices/ms-messages
     container_name: ms-messages
     ports:
       - "5004:5000"

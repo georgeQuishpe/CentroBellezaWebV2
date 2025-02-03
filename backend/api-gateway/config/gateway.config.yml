@@ -1,0 +1,69 @@
+http:
+  port: 8080
+admin:
+  port: 9876
+  host: localhost
+apiEndpoints:
+  ms-auth:
+    host: localhost
+    paths: '/ms-auth/*'
+  ms-services:
+    host: localhost
+    paths: '/ms-services/*'
+  ms-appointments:
+    host: localhost
+    paths: '/ms-appointments/*'
+  ms-messages:
+    host: localhost
+    paths: '/ms-messages/*'
+serviceEndpoints:
+  ms-auth:
+    url: 'http://localhost:5001' 
+  ms-services:
+    url: 'http://localhost:5002' 
+  ms-appointments:
+    url: 'http://localhost:5003'
+  ms-messages:
+    url: 'http://localhost:5004' 
+policies:
+  - basic-auth
+  - cors
+  - expression
+  - key-auth
+  - log
+  - oauth2
+  - proxy
+  - rate-limit
+pipelines:
+  auth-pipeline:
+    apiEndpoints:
+      - ms-auth
+    policies:
+      - proxy:
+          - action:
+              serviceEndpoint: ms-auth
+              changeOrigin: true
+  services-pipeline:
+    apiEndpoints:
+      - ms-services
+    policies:
+      - proxy:
+          - action:
+              serviceEndpoint: ms-services
+              changeOrigin: true
+  appointments-pipeline:
+    apiEndpoints:
+      - ms-appointments
+    policies:
+      - proxy:
+          - action:
+              serviceEndpoint: ms-appointments
+              changeOrigin: true
+  messages-pipeline:
+    apiEndpoints:
+      - ms-messages
+    policies:
+      - proxy:
+          - action:
+              serviceEndpoint: ms-messages
+              changeOrigin: true
