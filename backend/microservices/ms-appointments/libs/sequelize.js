@@ -5,11 +5,11 @@ const setupModels = require('../models');
 require('dotenv').config();
 
 const sequelize = new Sequelize({
-    host: process.env.DB_HOST_APPOINTMENT,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME_APPOINTMENT,
-    port: process.env.DB_PORT_APPOINTMENT,
+    host: process.env.DB_HOST_APPOINTMENT || 'db-appointments',
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'ProyectoWenAvanzadasIIB',
+    database: process.env.DB_NAME_APPOINTMENT || 'citas_db',
+    port: process.env.DB_PORT_APPOINTMENT || '5432',
     dialect: 'postgres',
     dialectOptions: {
         ssl: process.env.DB_SSL === 'true' ? { require: true, rejectUnauthorized: false } : false

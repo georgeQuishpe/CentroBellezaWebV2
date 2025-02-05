@@ -5,11 +5,11 @@ const setupModels = require('../models');
 require('dotenv').config();
 
 const sequelize = new Sequelize({
-    host: process.env.DB_HOST_MESSAGES,
-    username: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME_MESSAGES,
-    port: process.env.DB_PORT_MESSAGES,
+    host: process.env.DB_HOST_MESSAGES || 'db-messages',
+    username: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'ProyectoWenAvanzadasIIB ',
+    database: process.env.DB_NAME_MESSAGES || 'chat_db',
+    port: process.env.DB_PORT_MESSAGES || '5432',
     dialect: 'postgres',
     dialect: 'postgres',
     dialectOptions: {
