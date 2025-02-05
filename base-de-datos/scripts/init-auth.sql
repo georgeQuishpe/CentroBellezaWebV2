@@ -15,7 +15,8 @@ CREATE TABLE Usuarios (
     Telefono VARCHAR(20),
     Rol VARCHAR(20) CHECK (Rol IN ('Admin', 'Cliente')),
     FechaRegistro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    Estado BOOLEAN NOT NULL -- Activo/Inactivo
+    Estado BOOLEAN NOT NULL, -- Activo/Inactivo
+    verification_code VARCHAR(10)
 );
 
 INSERT INTO Usuarios (Id, Email, Password, Nombre, Telefono, Rol, Estado) VALUES
