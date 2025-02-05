@@ -8,10 +8,14 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - ms-auth
-      - ms-services
-      - ms-appointments
-      - ms-messages
+      ms-auth:
+        condition: service_healthy
+      ms-services:
+        condition: service_healthy
+      ms-appointments:
+        condition: service_healthy
+      ms-messages:
+        condition: service_healthy
     networks:
       - microservicios-network
 
@@ -22,7 +26,8 @@ services:
     ports:
       - "5001:5000"
     depends_on:
-      - db-auth
+      db-auth:
+        condition: service_healthy
     environment:
       DB_HOST: db-auth
       DB_USER: postgres
@@ -31,6 +36,11 @@ services:
       DB_PORT: 5432
     networks:
       - microservicios-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "db-auth", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
 
   db-auth:
     image: postgres:latest
@@ -59,7 +69,8 @@ services:
     ports:
       - "5002:5000"
     depends_on:
-      - db-services
+      db-services:
+        condition: service_healthy
     environment:
       DB_HOST: db-services
       DB_USER: postgres
@@ -68,6 +79,11 @@ services:
       DB_PORT: 5432
     networks:
       - microservicios-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "db-services", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
 
   db-services:
     image: postgres:latest
@@ -96,7 +112,8 @@ services:
     ports:
       - "5003:5000"
     depends_on:
-      - db-appointments
+      db-appointments:
+        condition: service_healthy
     environment:
       DB_HOST: db-appointments
       DB_USER: postgres
@@ -105,6 +122,11 @@ services:
       DB_PORT: 5432
     networks:
       - microservicios-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "db-appointments", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
 
   db-appointments:
     image: postgres:latest
@@ -133,7 +155,8 @@ services:
     ports:
       - "5004:5000"
     depends_on:
-      - db-messages
+      db-messages:
+        condition: service_healthy
     environment:
       DB_HOST: db-messages
       DB_USER: postgres
@@ -142,6 +165,11 @@ services:
       DB_PORT: 5432
     networks:
       - microservicios-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "db-messages", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
 
   db-messages:
     image: postgres:latest

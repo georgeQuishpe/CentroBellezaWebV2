@@ -12,16 +12,19 @@ const sequelize = new Sequelize({
     port: process.env.DB_PORT_AUTH,
     dialect: 'postgres',
     dialectOptions: {
-        ssl: {
-            require: true, //Antes era TRUE
-            rejectUnauthorized: false
-        }
+        ssl: process.env.DB_SSL === 'true' ? { require: true, rejectUnauthorized: false } : false
     },
-    logging: console.log, // Puedes desactivarlo si lo deseas
-    define: {
-        timestamps: false, // O true si deseas createdAt y updatedAt
-        freezeTableName: true // Evita que Sequelize pluralice los nombres de las tablas
-    }
+    pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000
+    },
+    retry: {
+        match: [/ECONNREFUSED/],
+        max: 5 // Número de intentos de reconexión
+    },
+    logging: console.log
 });
 
 sequelize.sync({ force: false, alter: false });
