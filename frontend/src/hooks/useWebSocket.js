@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import io from "socket.io-client";
 
-const SOCKET_SERVER_URL = "http://localhost:5000/ms-messages";
+const SOCKET_SERVER_URL = "http://localhost:5004";
 
 export const useWebSocket = (userId, isAdmin = false) => {
     const [messages, setMessages] = useState([]);
@@ -14,14 +14,22 @@ export const useWebSocket = (userId, isAdmin = false) => {
     const isMounted = useRef(true); // Bandera para evitar actualizaciones después del desmontaje
 
     useEffect(() => {
+        // Limpiar cualquier conexión existente
+        if (socketRef.current) {
+            socketRef.current.disconnect();
+        }
+
         // Inicializar el socket
         socketRef.current = io(SOCKET_SERVER_URL, {
+            path: '/ms-messages/socket.io',
             query: { userId, isAdmin },
-            transports: ['polling', 'websocket'],
+            transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
             timeout: 10000,
+            forceNew: true,
+            autoConnect: true
         });
 
         // Listeners del socket
@@ -48,6 +56,12 @@ export const useWebSocket = (userId, isAdmin = false) => {
 
         socketRef.current.on("connect_error", (err) => {
             console.error("Error de conexión:", err.message);
+            console.log("Error de conexión detallado:", {
+                error: err,
+                message: err.message,
+                description: err.description,
+                context: err.context
+            });
             setError(err.message);
         });
 
@@ -133,5 +147,6 @@ export const useWebSocket = (userId, isAdmin = false) => {
         selectedUserId,
         selectChat,
         loadChatMessages,
+        socket: socketRef.current
     };
 };

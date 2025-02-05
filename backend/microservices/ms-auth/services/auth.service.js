@@ -10,7 +10,7 @@ class AuthService {
     }
 
     async login(email, password) {
-        const user = await this.usersService.getUserByEmail(email);
+        const user = await this.usersService.findByEmail(email);
         if (!user) throw new Error('Usuario no encontrado');
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -24,7 +24,7 @@ class AuthService {
 
     async signup(userData) {
         const hashedPassword = await bcrypt.hash(userData.password, 10);
-        const newUser = await this.usersService.createUser({ ...userData, password: hashedPassword });
+        const newUser = await this.usersService.create({ ...userData, password: hashedPassword });
 
         const token = this.generateToken(newUser);
         const { password: _, ...userWithoutPassword } = newUser.toJSON();
@@ -33,24 +33,24 @@ class AuthService {
     }
 
     async sendPasswordRecovery(email) {
-        const user = await this.usersService.getUserByEmail(email);
+        const user = await this.usersService.findByEmail(email);
         if (!user) throw new Error('Usuario no encontrado');
 
         const recoveryCode = this.generateRecoveryCode();
-        await this.usersService.updateUser(user.id, { verificationCode: recoveryCode });
+        await this.usersService.update(user.id, { verificationCode: recoveryCode });
 
         await sendEmail(email, 'Código de recuperación', `Tu código de recuperación es: ${recoveryCode}`);
         return recoveryCode;
     }
 
     async resetPassword(email, code, newPassword) {
-        const user = await this.usersService.getUserByEmail(email);
+        const user = await this.usersService.findByEmail(email);
         if (!user) throw new Error('El usuario no existe');
 
         if (user.verificationCode !== code) throw new Error('El código de verificación no es válido');
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await this.usersService.updateUser(user.id, {
+        await this.usersService.update(user.id, {
             password: hashedPassword,
             verificationCode: null
         });

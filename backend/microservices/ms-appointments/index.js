@@ -8,6 +8,7 @@ const app = express();
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:8080",
+  "http://localhost:5000",
   "http://ms-auth:5000",
   "http://ms-services:5000",
   "http://ms-appointments:5000", 

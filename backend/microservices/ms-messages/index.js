@@ -11,6 +11,7 @@ const httpServer = createServer(app);
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:8080",
+  "http://localhost:5000",
   "http://ms-auth:5000",
   "http://ms-services:5000",
   "http://ms-appointments:5000", 
@@ -19,16 +20,18 @@ const ALLOWED_ORIGINS = [
 ];
 
 const io = new Server(httpServer, {
+  path: '/ms-messages/socket.io',
   cors: {
     origin: ALLOWED_ORIGINS,
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
+    allowedHeaders: ["content-type"]
   },
   transports: ['websocket', 'polling'], // Prioriza WebSocket
-  transports: ['websocket', 'polling'],
   pingTimeout: 60000,
   pingInterval: 25000,
   connectTimeout: 45000,  // Añadido timeout de conexión
+  allowEIO3: true,
   // Añadidas opciones de reconexión
   reconnection: true,
   reconnectionAttempts: 5,
@@ -50,6 +53,19 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Manejo de eventos de Socket.IO
+io.on('connection', (socket) => {
+  console.log('Cliente conectado:', socket.id);
+  
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado:', socket.id);
+  });
+
+  socket.on('error', (error) => {
+    console.error('Error en socket:', socket.id, error);
+  });
+});
 
 // Manejo de errores de Socket.IO
 io.on('connect_error', (err) => {
@@ -82,12 +98,16 @@ app.use((err, req, res, next) => {
 routerApi(app);
 
 const port = process.env.PORT_MESSAGES || 5004;
+const host = '0.0.0.0';
+
 // Inicio del servidor con manejo de errores
-httpServer.listen(port, '0.0.0.0', () => {
+httpServer.listen(port, host, () => {
   console.log(`Service messages funcionando en http://localhost:${port}`);
 }).on('error', (err) => {
   console.error('Error al iniciar el Service messages:', err);
+  process.exit(1);
 });
+
 // Manejo de señales de terminación
 process.on('SIGTERM', () => {
   console.log('Cerrando Service messages...');
@@ -95,4 +115,15 @@ process.on('SIGTERM', () => {
     console.log('Service messages cerrado');
     process.exit(0);
   });
+});
+
+// Manejo de errores no capturados
+process.on('uncaughtException', (err) => {
+  console.error('Error no capturado:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Promesa rechazada no manejada:', reason);
+  process.exit(1);
 });
