@@ -1,7 +1,12 @@
-CREATE DATABASE chat_db;
-GO
-USE chat_db;
-GO
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'chat_db') THEN
+        CREATE DATABASE auth_db;
+    END IF;
+END $$;
+
+\c chat_db;
+
 CREATE TABLE ChatMensajes (
     Id SERIAL PRIMARY KEY,
     UsuarioId VARCHAR(10) NOT NULL, 
@@ -9,8 +14,6 @@ CREATE TABLE ChatMensajes (
     FechaEnvio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Leido BOOLEAN NOT NULL
 );
-GO
-
 
 INSERT INTO ChatMensajes (UsuarioId, Mensaje, Leido) VALUES
 ('1701234567', 'Hola, quisiera agendar una cita para corte de cabello.', FALSE),

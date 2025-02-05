@@ -6,7 +6,7 @@ services:
     build: ./backend/api-gateway
     container_name: api-gateway
     ports:
-      - "5000:5000" 
+      - "5000:5000"
     depends_on:
       - ms-auth
       - ms-services
@@ -25,25 +25,32 @@ services:
       - db-auth
     environment:
       DB_HOST: db-auth
-      DB_USER: sa
+      DB_USER: postgres
       DB_PASSWORD: "ProyectoWenAvanzadasIIB"
       DB_NAME: auth_db
+      DB_PORT: 5432
     networks:
       - microservicios-network
 
   db-auth:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:latest
     container_name: db-auth
     environment:
-      SA_PASSWORD: "ProyectoWenAvanzadasIIB"
-      ACCEPT_EULA: "Y"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "ProyectoWenAvanzadasIIB"
+      POSTGRES_DB: auth_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
     ports:
-      - "1433:1433"
+      - "5433:5432"
     volumes:
+      - auth_data:/var/lib/postgresql/data
       - ./base-de-datos/scripts/init-auth.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - microservicios-network
-
 
   # Microservicio services
   ms-services:
@@ -55,26 +62,33 @@ services:
       - db-services
     environment:
       DB_HOST: db-services
-      DB_USER: sa
+      DB_USER: postgres
       DB_PASSWORD: "ProyectoWenAvanzadasIIB"
       DB_NAME: servicios_db
+      DB_PORT: 5432
     networks:
       - microservicios-network
 
   db-services:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:latest
     container_name: db-services
     environment:
-      SA_PASSWORD: "ProyectoWenAvanzadasIIB"
-      ACCEPT_EULA: "Y"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "ProyectoWenAvanzadasIIB"
+      POSTGRES_DB: servicios_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
     ports:
-      - "1434:1433"
+      - "5434:5432"
     volumes:
+      - services_data:/var/lib/postgresql/data
       - ./base-de-datos/scripts/init-services.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - microservicios-network
 
-  
   # Microservicio appointments
   ms-appointments:
     build: ./backend/microservices/ms-appointments
@@ -85,26 +99,33 @@ services:
       - db-appointments
     environment:
       DB_HOST: db-appointments
-      DB_USER: sa
+      DB_USER: postgres
       DB_PASSWORD: "ProyectoWenAvanzadasIIB"
       DB_NAME: citas_db
+      DB_PORT: 5432
     networks:
       - microservicios-network
 
   db-appointments:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:latest
     container_name: db-appointments
     environment:
-      SA_PASSWORD: "ProyectoWenAvanzadasIIB"
-      ACCEPT_EULA: "Y"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "ProyectoWenAvanzadasIIB"
+      POSTGRES_DB: citas_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
     ports:
-      - "1435:1433"
+      - "5435:5432"
     volumes:
+      - appointments_data:/var/lib/postgresql/data
       - ./base-de-datos/scripts/init-appointments.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - microservicios-network
 
-  
   # Microservicio messages
   ms-messages:
     build: ./backend/microservices/ms-messages
@@ -115,23 +136,39 @@ services:
       - db-messages
     environment:
       DB_HOST: db-messages
-      DB_USER: sa
+      DB_USER: postgres
       DB_PASSWORD: "ProyectoWenAvanzadasIIB"
       DB_NAME: chat_db
+      DB_PORT: 5432
     networks:
       - microservicios-network
 
   db-messages:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:latest
     container_name: db-messages
     environment:
-      SA_PASSWORD: "ProyectoWenAvanzadasIIB"
-      ACCEPT_EULA: "Y"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "ProyectoWenAvanzadasIIB"
+      POSTGRES_DB: chat_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
     ports:
-      - "1436:1433"
+      - "5436:5432"
     volumes:
-      - ./base-de-datos/scripts/init-db1.sql:/docker-entrypoint-initdb.d/init.sql
+      - messages_data:/var/lib/postgresql/data
+      - ./base-de-datos/scripts/init-messages.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - microservicios-network
 
- 
+networks:
+  microservicios-network:
+    driver: bridge
+
+volumes:
+  auth_data:
+  services_data:
+  appointments_data:
+  messages_data:

@@ -21,6 +21,8 @@
     "nodemon": "^3.1.7",
     "react-router-dom": "^7.0.1",
     "sequelize": "^6.37.5",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4"
   }
 }

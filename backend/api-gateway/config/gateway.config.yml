@@ -18,13 +18,13 @@ apiEndpoints:
     paths: '/ms-messages/*'
 serviceEndpoints:
   ms-auth:
-    url: 'http://localhost:5001' 
+    url: 'http://ms-auth:5000'  # Usa el nombre del servicio en Docker
   ms-services:
-    url: 'http://localhost:5002' 
+    url: 'http://ms-services:5000'  # Usa el nombre del servicio en Docker
   ms-appointments:
-    url: 'http://localhost:5003'
+    url: 'http://ms-appointments:5000'  # Usa el nombre del servicio en Docker
   ms-messages:
-    url: 'http://localhost:5004' 
+    url: 'http://ms-messages:5000'  # Usa el nombre del servicio en Docker
 policies:
   - basic-auth
   - cors
