@@ -4,6 +4,8 @@ const service = new UsersService();
 const get = async (req, res) => {
     try {
         const response = await service.find();
+        console.log(response);
+        
         res.json(response);
     } catch (error) {
         res.status(500).send({ success: false, message: error.message });

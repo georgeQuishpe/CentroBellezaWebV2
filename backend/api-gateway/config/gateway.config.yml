@@ -1,30 +1,30 @@
 http:
-  port: 8080
+  port: 5000
 admin:
   port: 9876
   host: localhost
 apiEndpoints:
   ms-auth:
     host: localhost
-    paths: '/ms-auth/*'
+    paths: ['/ms-auth/*', '/api/v1/users/*', '/api/v1/auth/*']
   ms-services:
     host: localhost
-    paths: '/ms-services/*'
+    paths: ['/ms-services/*', '/api/v1/services/*']
   ms-appointments:
     host: localhost
-    paths: '/ms-appointments/*'
+    paths: ['/ms-appointments/*', '/api/v1/appointments/*']
   ms-messages:
     host: localhost
-    paths: '/ms-messages/*'
+    paths: ['/ms-messages/*', '/api/v1/chat-messages/*']
 serviceEndpoints:
   ms-auth:
-    url: 'http://ms-auth:5000'  # Usa el nombre del servicio en Docker
+    url: 'http://localhost:5001'
   ms-services:
-    url: 'http://ms-services:5000'  # Usa el nombre del servicio en Docker
+    url: 'http://localhost:5002'
   ms-appointments:
-    url: 'http://ms-appointments:5000'  # Usa el nombre del servicio en Docker
+    url: 'http://localhost:5003'
   ms-messages:
-    url: 'http://ms-messages:5000'  # Usa el nombre del servicio en Docker
+    url: 'http://localhost:5004'
 policies:
   - basic-auth
   - cors
@@ -39,6 +39,10 @@ pipelines:
     apiEndpoints:
       - ms-auth
     policies:
+      - rate-limit:
+          - action:
+              max: 100
+              windowMs: 60000
       - proxy:
           - action:
               serviceEndpoint: ms-auth
@@ -47,6 +51,10 @@ pipelines:
     apiEndpoints:
       - ms-services
     policies:
+      - rate-limit:
+          - action:
+              max: 100
+              windowMs: 60000
       - proxy:
           - action:
               serviceEndpoint: ms-services
@@ -55,6 +63,10 @@ pipelines:
     apiEndpoints:
       - ms-appointments
     policies:
+      - rate-limit:
+          - action:
+              max: 100
+              windowMs: 60000
       - proxy:
           - action:
               serviceEndpoint: ms-appointments
@@ -63,6 +75,10 @@ pipelines:
     apiEndpoints:
       - ms-messages
     policies:
+      - rate-limit:
+          - action:
+              max: 100
+              windowMs: 60000
       - proxy:
           - action:
               serviceEndpoint: ms-messages

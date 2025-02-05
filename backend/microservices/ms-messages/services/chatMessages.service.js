@@ -1,12 +1,10 @@
 const { models } = require('../libs/sequelize');
-const { Op } = require('sequelize'); // Asegúrate de importar 
+const { Op } = require('sequelize');
 const axios = require('axios');
 const { sequelize } = require('../libs/sequelize.js');
 
-
 class ChatMessagesService {
     constructor() {
-        // Si necesitas acceder a los modelos en el constructor
         this.models = models;
     }
 
@@ -14,27 +12,28 @@ class ChatMessagesService {
         return typeof userId === 'string' ? userId.replace('admin_', '') : userId;
     }
 
-    async verifyUserExists(userId) {
-        const cleanId = this.cleanUserId(userId);
-        const user = await getUserById(cleanId);
-        return !!user;
-    }
-
     async getUserById(userId) {
         try {
-          const response = await axios.get(`http://ms-auth:5001/users/${userId}`);
-          return response.data;
+            const response = await axios.get(`http://host.docker.internal:5001/api/v1/users/${userId}`);
+            return response.data;
         } catch (error) {
-          console.error('Error al obtener el usuario:', error.message);
-          throw error;
+            console.error('Error al obtener el usuario:', error.message);
+            return null;
         }
-      }
+    }
 
+    async verifyUserExists(userId) {
+        const cleanId = this.cleanUserId(userId);
+        const user = await this.getUserById(cleanId);
+        return !!user;
+    }
 
     async find(userId) {
         if (!userId) return [];
 
         const cleanId = this.cleanUserId(userId);
+        const user = await this.getUserById(cleanId);
+        if (!user) return [];
 
         return await models.ChatMessage.findAll({
             where: {
@@ -44,25 +43,11 @@ class ChatMessagesService {
                 ],
             },
             order: [['fechaEnvio', 'ASC']],
-            include: [
-                {
-                    model: models.User,
-                    as: 'remitente',
-                    attributes: ['id', 'nombre', 'email'],
-                },
-                {
-                    model: models.User,
-                    as: 'destinatario',
-                    attributes: ['id', 'nombre', 'email'],
-                },
-            ],
         });
     }
 
-
     async create(data) {
         try {
-            // Limpiar IDs antes de crear el mensaje
             const messageData = {
                 usuarioId: this.cleanUserId(data.usuarioId),
                 mensaje: data.mensaje,
@@ -71,38 +56,16 @@ class ChatMessagesService {
                 leido: false
             };
 
-            // Verificar que tanto el remitente como el destinatario existen
             const [senderExists, recipientExists] = await Promise.all([
                 this.verifyUserExists(messageData.usuarioId),
                 messageData.toUserId ? this.verifyUserExists(messageData.toUserId) : Promise.resolve(true)
             ]);
 
-            if (!senderExists) {
-                throw new Error(`Remitente ${data.usuarioId} no encontrado`);
+            if (!senderExists || (messageData.toUserId && !recipientExists)) {
+                throw new Error(`Usuario no encontrado`);
             }
 
-            if (messageData.toUserId && !recipientExists) {
-                throw new Error(`Destinatario ${data.toUserId} no encontrado`);
-            }
-
-            // Crear el mensaje
-            const message = await models.ChatMessage.create(messageData);
-
-            // Retornar el mensaje con las relaciones cargadas
-            return await models.ChatMessage.findByPk(message.id, {
-                include: [
-                    {
-                        model: User,
-                        as: "remitente",
-                        attributes: ["id", "nombre", "email"]
-                    },
-                    {
-                        model: User,
-                        as: "destinatario",
-                        attributes: ["id", "nombre", "email"]
-                    }
-                ]
-            });
+            return await models.ChatMessage.create(messageData);
         } catch (error) {
             console.error('Error en create:', error);
             throw error;
@@ -113,6 +76,8 @@ class ChatMessagesService {
         if (!userId) return [];
 
         const cleanId = this.cleanUserId(userId);
+        const user = await this.getUserById(cleanId);
+        if (!user) return [];
 
         return await models.ChatMessage.findAll({
             where: {
@@ -121,22 +86,9 @@ class ChatMessagesService {
                     { toUserId: cleanId }
                 ]
             },
-            order: [["fechaEnvio", "ASC"]],
-            include: [
-                {
-                    model: User,
-                    as: "remitente",
-                    attributes: ["id", "nombre", "email"]
-                },
-                {
-                    model: User,
-                    as: "destinatario",
-                    attributes: ["id", "nombre", "email"]
-                }
-            ]
+            order: [["fechaEnvio", "ASC"]]
         });
     }
-
 
     async markAsRead(id) {
         try {
@@ -178,23 +130,6 @@ class ChatMessagesService {
             throw error;
         }
     }
-
-    async findAdminUser() {
-        try {
-            const adminUser = await models.User.findOne({
-                where: {
-                    rol: 'Admin',
-                    estado: true
-                }
-            });
-            return adminUser;
-        } catch (error) {
-            console.error('Error al buscar admin:', error);
-            throw error;
-        }
-    }
-
-
 }
 
 module.exports = ChatMessagesService;

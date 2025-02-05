@@ -28,7 +28,7 @@ const getMessagesByUser = async (req, res) => {
 const getAppointmentsByUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const appointments = await axios.get(`http://ms-appointments:5003/user/${userId}`);
+        const appointments = await axios.get(`http://host.docker.internal:5003/api/v1/appointments/user/${userId}`);
 
         res.json(appointments);
     } catch (error) {

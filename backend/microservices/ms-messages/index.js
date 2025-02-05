@@ -83,7 +83,7 @@ routerApi(app);
 
 const port = process.env.PORT_MESSAGES || 5004;
 // Inicio del servidor con manejo de errores
-httpServer.listen(port, () => {
+httpServer.listen(port, '0.0.0.0', () => {
   console.log(`Service messages funcionando en http://localhost:${port}`);
 }).on('error', (err) => {
   console.error('Error al iniciar el Service messages:', err);

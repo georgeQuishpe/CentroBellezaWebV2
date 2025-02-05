@@ -1,25 +1,6 @@
 version: '3.8'
 
 services:
-  # API Gateway
-  api-gateway:
-    build: ./backend/api-gateway
-    container_name: api-gateway
-    ports:
-      - "5000:5000"
-    depends_on:
-      ms-auth:
-        condition: service_healthy
-      ms-services:
-        condition: service_healthy
-      ms-appointments:
-        condition: service_healthy
-      ms-messages:
-        condition: service_healthy
-    networks:
-      - microservicios-network
-
-  # Microservicio auth
   ms-auth:
     build: ./backend/microservices/ms-auth
     container_name: ms-auth

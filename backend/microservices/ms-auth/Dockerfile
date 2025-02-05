@@ -6,5 +6,7 @@ RUN npm install --production --silent && mv node_modules ../
 COPY . .
 EXPOSE 5001
 RUN chown -R node /usr/src/app
+RUN rm -rf node_modules package-lock.json
+RUN npm install
 USER node
 CMD ["npm", "start"]

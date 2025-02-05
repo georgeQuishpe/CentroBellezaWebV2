@@ -47,7 +47,7 @@ routerApi(app);
 
 const port = process.env.PORT_SERVICES || 5002;
 // Inicio del servidor con manejo de errores
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Service services funcionando en http://localhost:${port}`);
 }).on('error', (err) => {
   console.error('Error al iniciar el Service services:', err);
