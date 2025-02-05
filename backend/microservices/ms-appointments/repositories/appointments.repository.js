@@ -8,29 +8,16 @@ class AppointmentsRepository {
 
     async findAll() {
         return await models.Appointment.findAll({
-            include: [
-                { model: models.Service, as: 'servicio' },
-                { model: models.User, as: 'usuario', attributes: ['id', 'nombre', 'email'] }
-            ]
         });
     }
 
     async findById(id) {
-        return await models.Appointment.findByPk(id, {
-            include: [
-                { model: models.Service, as: 'servicio' },
-                { model: models.User, as: 'usuario', attributes: ['id', 'nombre', 'email'] }
-            ]
-        });
+        return await models.Appointment.findByPk(id);
     }
 
     async findByUser(userId) {
         return await models.Appointment.findAll({
-            where: { usuarioId: userId },
-            include: [
-                { model: models.Service, as: 'servicio' },
-                { model: models.User, as: 'usuario', attributes: ['id', 'nombre', 'email'] }
-            ]
+            where: { usuarioId: userId }
         });
     }
 

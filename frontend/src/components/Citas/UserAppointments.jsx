@@ -35,15 +35,7 @@ export function UserAppointments({ userId }) {
         }
 
         const data = await response.json();
-        const appointmentsWithServices = Array.isArray(data)
-          ? data.map((appointment) => ({
-            ...appointment,
-            servicio: appointment.servicio || {
-              nombre: "Servicio no disponible",
-            },
-          }))
-          : [];
-        setAppointments(appointmentsWithServices);
+        setAppointments(data);
       } catch (err) {
         console.error("Error al cargar citas:", err);
         setError(err.message);
@@ -135,7 +127,7 @@ export function UserAppointments({ userId }) {
               <div className="flex justify-between items-start">
                 <div>
                   <div className="font-semibold font-medium text-gray-800">
-                    {appointment.servicio?.nombre || "Servicio no especificado"}
+                    {appointment.servicioId || "Servicio no especificado"}
                   </div>
                   <div className="text-sm text-gray-600 flex items-center mt-1">
                     <Calendar className="mr-2 text-gray-400" size={16} />

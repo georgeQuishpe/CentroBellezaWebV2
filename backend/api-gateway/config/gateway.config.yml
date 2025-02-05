@@ -45,6 +45,12 @@ pipelines:
     apiEndpoints:
       - ms-auth
     policies:
+      - cors:
+          action:
+            origin: "*"  # O cambiar por "http://localhost:3000"
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            allowedHeaders: ["Authorization", "Content-Type"]
+            credentials: true
       - rate-limit:
           - action:
               max: 100
@@ -57,6 +63,12 @@ pipelines:
     apiEndpoints:
       - ms-services
     policies:
+      - cors:
+          action:
+            origin: "*"  # O cambiar por "http://localhost:3000"
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            allowedHeaders: ["Authorization", "Content-Type"]
+            credentials: true
       - rate-limit:
           - action:
               max: 100
@@ -69,6 +81,12 @@ pipelines:
     apiEndpoints:
       - ms-appointments
     policies:
+      - cors:
+          action:
+            origin: "*"  # O cambiar por "http://localhost:3000"
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            allowedHeaders: ["Authorization", "Content-Type"]
+            credentials: true
       - rate-limit:
           - action:
               max: 100
