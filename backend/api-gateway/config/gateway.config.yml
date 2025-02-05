@@ -83,3 +83,4 @@ pipelines:
           - action:
               serviceEndpoint: ms-messages
               changeOrigin: true
+              ws: true

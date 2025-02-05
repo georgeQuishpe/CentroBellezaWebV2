@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import io from "socket.io-client";
 
-const SOCKET_SERVER_URL = "http://localhost:5000";
+const SOCKET_SERVER_URL = "http://localhost:5000/ms-messages";
 
 export const useWebSocket = (userId, isAdmin = false) => {
     const [messages, setMessages] = useState([]);

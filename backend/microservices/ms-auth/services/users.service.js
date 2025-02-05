@@ -1,41 +1,33 @@
-const { models } = require('../libs/sequelize');
+const UserRepository = require('../repositories/user.repository');
 
 class UsersService {
-
-    constructor() {}
-
-    async find(){
-        const res = await models.User.findAll();
-        return res;
+    constructor() {
+        this.userRepository = new UserRepository();
     }
 
-    async findById(id){
-        const res = await models.User.findByPk(id);
-        return res;
+    async find() {
+        return await this.userRepository.findAll();
     }
 
-    async findByEmail(email){
-        const res = await models.User.findOne({ where: { email } });
-        return res;
+    async findById(id) {
+        return await this.userRepository.findById(id);
     }
 
-    async create(data){
-        const res = await models.User.create(data);
-        return res;
+    async findByEmail(email) {
+        return await this.userRepository.findByEmail(email);
     }
 
-    async update(id, data){
-        const model = await this.findById(id);
-        const res = await model.update(data);
-        return res;
+    async create(data) {
+        return await this.userRepository.create(data);
     }
 
-    async delete(id){
-        const model = await this.findById(id);
-        const res = await model.destroy();
-        return res;
+    async update(id, data) {
+        return await this.userRepository.update(id, data);
     }
 
+    async delete(id) {
+        return await this.userRepository.delete(id);
+    }
 }
 
 module.exports = UsersService;

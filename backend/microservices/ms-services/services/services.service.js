@@ -1,36 +1,29 @@
-const { models } = require('../libs/sequelize');
+const ServiceRepository = require('../repositories/service.repository');
 
 class ServicesService {
-
-    constructor() { }
+    constructor() {
+        this.repository = new ServiceRepository();
+    }
 
     async find() {
-        const res = await models.Service.findAll();
-        return res;
+        return await this.repository.findAll();
     }
 
     async findById(id) {
-        const res = await models.Service.findByPk(id);
-        return res;
+        return await this.repository.findById(id);
     }
 
     async create(data) {
-        const res = await models.Service.create(data);
-        return res;
+        return await this.repository.create(data);
     }
 
     async update(id, data) {
-        const model = await this.findById(id);
-        const res = await model.update(data);
-        return res;
+        return await this.repository.update(id, data);
     }
 
     async delete(id) {
-        const model = await this.findById(id);
-        const res = await model.destroy();
-        return res;
+        return await this.repository.delete(id);
     }
-
 }
 
 module.exports = ServicesService;
