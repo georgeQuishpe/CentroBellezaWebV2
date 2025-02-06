@@ -583,7 +583,7 @@ function AppointmentManager() {
             alert("Error al actualizar la cita");
         }
     };
-    
+
     const handleDeleteAppointment = async (id) => {
         showConfirmation(
             "Eliminar Cita",
