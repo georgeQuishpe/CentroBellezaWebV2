@@ -556,7 +556,7 @@ function AppointmentManager() {
 
     const fetchServices = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/v1/services", {
+            const response = await fetch("http://localhost:5000/api/v1/services/", {
                 headers: getAuthHeaders()
             });
             if (!response.ok) throw new Error('Error al cargar servicios');
@@ -608,7 +608,7 @@ function AppointmentManager() {
 
     const fetchAppointments = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/v1/appointments", {
+            const response = await fetch("http://localhost:5000/api/v1/appointments/", {
                 headers: getAuthHeaders()
             });
             if (!response.ok) throw new Error('Error al cargar citas');
