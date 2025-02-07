@@ -1,0 +1,111 @@
+http:
+  port: 5000
+admin:
+  port: 9876
+  host: localhost
+apiEndpoints:
+  ms-auth:
+    host: localhost
+    paths: ['/ms-auth/*', '/api/v1/users/*', '/api/v1/auth/*']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  ms-services:
+    host: localhost
+    paths: ['/ms-services/*', '/api/v1/services/*']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  ms-appointments:
+    host: localhost
+    paths: ['/ms-appointments/*', '/api/v1/appointments/*']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  ms-messages:
+    host: localhost
+    paths: ['/ms-messages/*', '/api/v1/chat-messages/*']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+    socket: true
+
+serviceEndpoints:
+  ms-auth:
+    url: 'http://localhost:5001'
+  ms-services:
+    url: 'http://localhost:5002'
+  ms-appointments:
+    url: 'http://localhost:5003'
+  ms-messages:
+    url: 'http://localhost:5004'
+policies:
+  - basic-auth
+  - cors
+  - expression
+  - key-auth
+  - log
+  - oauth2
+  - proxy
+  - rate-limit
+pipelines:
+  auth-pipeline:
+    apiEndpoints:
+      - ms-auth
+    policies:
+      - cors:
+          action:
+            origin: "*"  # O cambiar por "http://localhost:3000"
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            allowedHeaders: ["Authorization", "Content-Type"]
+            credentials: true
+      - rate-limit:
+          - action:
+              max: 100
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: ms-auth
+              changeOrigin: true
+  services-pipeline:
+    apiEndpoints:
+      - ms-services
+    policies:
+      - cors:
+          action:
+            origin: "*"  # O cambiar por "http://localhost:3000"
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            allowedHeaders: ["Authorization", "Content-Type"]
+            credentials: true
+      - rate-limit:
+          - action:
+              max: 100
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: ms-services
+              changeOrigin: true
+  appointments-pipeline:
+    apiEndpoints:
+      - ms-appointments
+    policies:
+      - cors:
+          action:
+            origin: "*"  # O cambiar por "http://localhost:3000"
+            methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            allowedHeaders: ["Authorization", "Content-Type"]
+            credentials: true
+      - rate-limit:
+          - action:
+              max: 100
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: ms-appointments
+              changeOrigin: true
+  messages-pipeline:
+    apiEndpoints:
+      - ms-messages
+    policies:
+      - rate-limit:
+          - action:
+              max: 100
+              windowMs: 60000
+      - proxy:
+          - action:
+              serviceEndpoint: ms-messages
+              changeOrigin: true
+              ws: true
+  

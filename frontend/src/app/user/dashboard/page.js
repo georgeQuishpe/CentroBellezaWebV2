@@ -46,7 +46,7 @@ export default function UserDashboard() {
 
                 setUser(parsedUser);
 
-                const response = await fetch("http://localhost:5000/api/v1/services");
+                const response = await fetch("http://localhost:5000/api/v1/services/");
                 const servicesData = await response.json();
                 setServices(servicesData);
             } catch (error) {
@@ -118,7 +118,7 @@ export default function UserDashboard() {
                 throw new Error('No hay sesión activa');
             }
 
-            const response = await fetch("http://localhost:5000/api/v1/appointments", {
+            const response = await fetch("http://localhost:5000/api/v1/appointments/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

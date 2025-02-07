@@ -56,8 +56,8 @@ export default function AdminDashboard() {
             try {
                 // Cargar datos solo si es admin
                 const [servicesResponse, usersResponse] = await Promise.all([
-                    fetch('http://localhost:5000/api/v1/services'),
-                    fetch('http://localhost:5000/api/v1/users')
+                    fetch('http://localhost:5000/api/v1/services/'),
+                    fetch('http://localhost:5000/api/v1/users/')
                 ]);
 
                 if (!servicesResponse.ok || !usersResponse.ok) {
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
                 throw new Error('No hay sesión activa');
             }
 
-            const response = await fetch('http://localhost:5000/api/v1/services', {
+            const response = await fetch('http://localhost:5000/api/v1/services/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -556,7 +556,7 @@ function AppointmentManager() {
 
     const fetchServices = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/v1/services", {
+            const response = await fetch("http://localhost:5000/api/v1/services/", {
                 headers: getAuthHeaders()
             });
             if (!response.ok) throw new Error('Error al cargar servicios');
@@ -608,7 +608,7 @@ function AppointmentManager() {
 
     const fetchAppointments = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/v1/appointments", {
+            const response = await fetch("http://localhost:5000/api/v1/appointments/", {
                 headers: getAuthHeaders()
             });
             if (!response.ok) throw new Error('Error al cargar citas');

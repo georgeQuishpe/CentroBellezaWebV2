@@ -43,7 +43,7 @@ export function EditAppointmentModal({
       };
 
       const response = await fetch(
-        "http://localhost:5000/api/v1/appointments",
+        "http://localhost:5000/api/v1/appointments/",
         {
           method: "POST",
           headers: {
@@ -114,7 +114,7 @@ export function EditAppointmentModal({
               >
                 {services.map((service) => (
                   <option key={service.id} value={service.id}>
-                    {service.nombre}
+                    {service.id}
                   </option>
                 ))}
               </select>
