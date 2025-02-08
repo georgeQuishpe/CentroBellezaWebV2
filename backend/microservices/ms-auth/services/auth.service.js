@@ -17,28 +17,33 @@ class AuthService {
 
 
     async login(email, password) {
-        const user = await this.usersService.findByEmail(email);
-        if (!user) throw new Error('Usuario no encontrado');
+        try {
+            const user = await this.usersService.findByEmail(email);
+            if (!user) {
+                console.log('Usuario no encontrado:', email);
+                throw new Error('Usuario no encontrado');
+            }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) throw new Error('Contraseña incorrecta');
+            console.log('Usuario encontrado:', user.email, 'Rol:', user.rol); // Añade este log
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+            if (!isPasswordValid) {
+                throw new Error('Contraseña incorrecta');
+            }
 
-        const token = this.generateToken(user);
-        const refreshToken = this.generateRefreshToken(user);
+            return {
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    rol: user.rol,
+                    nombre: user.nombre
+                },
+                token: this.generateToken(user)
+            };
+        } catch (error) {
+            console.error('Error en login:', error);
+            throw error;
+        }
 
-        // const { password: _, ...userWithoutPassword } = user.toJSON();
-
-        // return { ...userWithoutPassword, token };
-
-        return {
-            user: {
-                id: user.id,
-                email: user.email,
-                rol: user.rol
-            },
-            token,
-            refreshToken
-        };
     }
 
     async signup(userData) {

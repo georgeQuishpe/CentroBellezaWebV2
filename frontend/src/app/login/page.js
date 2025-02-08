@@ -42,11 +42,21 @@ export default function LoginPage() {
       authService.setAuth(data)
 
       // Redirección basada en rol
-      if (data.rol === 'Admin') {
+      // if (data.rol === 'Admin') {
+      //   router.push('/admin/dashboard')
+      // } else {
+      //   router.push('/user/dashboard')
+      // }
+
+      if (data.user.rol === 'Admin') {  // Asegúrate de que coincida exactamente
         router.push('/admin/dashboard')
       } else {
         router.push('/user/dashboard')
       }
+
+      // Añade esto después de recibir la respuesta del login
+      console.log('Datos del usuario:', data.user);
+      console.log('Rol del usuario:', data.user.rol);
 
     } catch (err) {
       setError(err.message)
