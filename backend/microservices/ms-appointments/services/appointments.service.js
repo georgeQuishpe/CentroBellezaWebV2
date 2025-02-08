@@ -1,4 +1,4 @@
-const AppointmentsRepository = require('../repositories/appointments.repository');
+const AppointmentsRepository = require('../repositories/appointment.repository');
 
 class AppointmentsService {
     constructor() {}
