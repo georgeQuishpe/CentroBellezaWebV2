@@ -54,6 +54,8 @@ class ChatMessagesService {
     }
 
     async create(data) {
+        console.log('Creando mensaje:', data);
+
         const messageData = {
             usuarioId: this.cleanUserId(data.usuarioId),
             mensaje: data.mensaje,
@@ -70,6 +72,7 @@ class ChatMessagesService {
         // if (!senderExists || (messageData.toUserId && !recipientExists)) {
         //     throw new Error(`Usuario no encontrado`);
         // }
+        console.log('Datos procesados:', messageData);
 
         return await this.repository.create(messageData);
     }

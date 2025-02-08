@@ -39,35 +39,60 @@ export function MessageList() {
   };
 
   return (
+    // <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    //   {filteredMessages.map((message) => {
+    //     const isOwn = isOwnMessage(message);
+    //     return (
+    //       <div
+    //         key={message.id}
+    //         className={`flex ${
+    //           isUserMessage(message) ? "justify-start" : "justify-end"
+    //         }`}
+    //       >
+    //         <div
+    //           className={`max-w-[80%] rounded-lg p-3 ${
+    //             isUserMessage(message)
+    //               ? "bg-gray-100 text-black"
+    //               : "bg-blue-500 text-white"
+    //           }`}
+    //         >
+    //           <div className="text-xs mb-1">
+    //             {isUserMessage(message)
+    //               ? isAdmin
+    //                 ? message.usuario?.nombre
+    //                 : "Tú"
+    //               : "Soporte"}
+    //           </div>
+    //           <p className="text-sm">{message.mensaje}</p>
+    //         </div>
+    //       </div>
+    //     );
+    //   })}
+    //   <div ref={bottomRef} />
+    // </div>
+
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      {filteredMessages.map((message) => {
-        const isOwn = isOwnMessage(message);
-        return (
+      {messages.map((message, index) => (
+        <div
+          key={message.id || index}
+          className={`flex ${
+            message.usuarioId === userId ? "justify-end" : "justify-start"
+          }`}
+        >
           <div
-            key={message.id}
-            className={`flex ${
-              isUserMessage(message) ? "justify-start" : "justify-end"
+            className={`max-w-[70%] rounded-lg p-3 ${
+              message.usuarioId === userId
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-black"
             }`}
           >
-            <div
-              className={`max-w-[80%] rounded-lg p-3 ${
-                isUserMessage(message)
-                  ? "bg-gray-100 text-black"
-                  : "bg-blue-500 text-white"
-              }`}
-            >
-              <div className="text-xs mb-1">
-                {isUserMessage(message)
-                  ? isAdmin
-                    ? message.usuario?.nombre
-                    : "Tú"
-                  : "Soporte"}
-              </div>
-              <p className="text-sm">{message.mensaje}</p>
-            </div>
+            <p>{message.mensaje}</p>
+            <span className="text-xs opacity-75">
+              {new Date(message.fechaEnvio).toLocaleTimeString()}
+            </span>
           </div>
-        );
-      })}
+        </div>
+      ))}
       <div ref={bottomRef} />
     </div>
   );

@@ -53,18 +53,22 @@ module.exports = (io) => {
         }
 
         socket.on('sendMessage', async (messageData) => {
+            console.log('Mensaje recibido en servidor:', messageData);
+
             try {
                 console.log('Mensaje recibido:', messageData);
 
                 // Si el mensaje es para un admin, buscar un admin en la base de datos
                 let actualToUserId = messageData.toUserId;
-                if (messageData.toUserId === 'admin') {
-                    const adminUser = await service.findAdminUser(); // Necesitamos añadir este método
-                    if (!adminUser) {
-                        throw new Error('No se encontró un administrador disponible');
-                    }
-                    actualToUserId = adminUser.id;
-                }
+
+
+                // if (messageData.toUserId === 'admin') {
+                //     const adminUser = await service.findAdminUser(); // Necesitamos añadir este método
+                //     if (!adminUser) {
+                //         throw new Error('No se encontró un administrador disponible');
+                //     }
+                //     actualToUserId = adminUser.id;
+                // }
 
                 const newMessage = await service.create({
                     usuarioId: messageData.userId,
@@ -72,6 +76,7 @@ module.exports = (io) => {
                     toUserId: actualToUserId,
                     fechaEnvio: new Date()
                 });
+                console.log('Mensaje guardado:', newMessage);
 
                 // Notificar al remitente
                 socket.emit('message', newMessage);
@@ -96,6 +101,12 @@ module.exports = (io) => {
                     Array.from(adminSockets).forEach(adminSocketId => {
                         io.to(adminSocketId).emit('message', newMessage);
                     });
+                } else {
+                    // Emitir mensaje al destinatario específico
+                    const recipientSocket = connectedUsers.get(messageData.toUserId);
+                    if (recipientSocket) {
+                        io.to(recipientSocket).emit('message', newMessage);
+                    }
                 }
 
 
@@ -118,4 +129,3 @@ module.exports = (io) => {
         });
     });
 };
-        

@@ -11,6 +11,11 @@ class AuthService {
         this.usersService = new UsersService();
     }
 
+    findUserById(id) {
+        return models.User.findByPk(id);
+    }
+
+
     async login(email, password) {
         const user = await this.usersService.findByEmail(email);
         if (!user) throw new Error('Usuario no encontrado');
@@ -115,12 +120,14 @@ class AuthService {
     generateRecoveryCode() {
         return Math.random().toString(36).substr(2, 6).toUpperCase();
     }
-
     verifyToken(token) {
         try {
             return jwt.verify(token, this.jwtSecret);
         } catch (error) {
-            throw new Error('Token inválido');
+            if (error.name === 'TokenExpiredError') {
+                throw new Error('Token expired');
+            }
+            throw new Error('Invalid token');
         }
     }
 }

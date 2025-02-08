@@ -7,21 +7,40 @@ router.post('/signup', signup);
 router.post('/login', login);
 router.post('/recover-password', recoverPassword);
 router.post('/reset-password', resetPassword);
-router.post('/refresh-token', async (req, res, next) => {
+router.post('/refresh-token', async (req, res) => {
     try {
-        const { refreshToken } = req.body;
-        const decoded = jwt.verify(refreshToken, config.jwtSecret);
-
-        if (decoded.type !== 'refresh') {
-            throw new Error('Token inválido');
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided' });
         }
 
-        const user = await service.usersService.findById(decoded.sub);
-        const newToken = service.generateToken(user);
+        // Verificar token actual
+        const decoded = jwt.verify(token, config.jwtSecret, { ignoreExpiration: true });
+        
+        // Buscar usuario
+        const user = await service.findUserById(decoded.sub);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
+        // Generar nuevo token
+        const newToken = jwt.sign({
+            sub: user.id,
+            email: user.email,
+            rol: user.rol,
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hora
+        }, config.jwtSecret);
+
+        // Devolver nuevo token
         res.json({ token: newToken });
+        
     } catch (error) {
-        next(error);
+        console.error('Error refreshing token:', error);
+        res.status(500).json({ 
+            message: 'Error refreshing token',
+            error: error.message 
+        });
     }
 });
 
