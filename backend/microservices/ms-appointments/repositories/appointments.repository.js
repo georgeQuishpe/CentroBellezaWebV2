@@ -21,6 +21,24 @@ class AppointmentsRepository {
         });
     }
 
+    //     async findByUser(userId) {
+    //     return await models.Appointment.findAll({
+    //         where: { usuarioId: userId },
+    //         include: [
+    //             {
+    //                 model: models.Service,
+    //                 as: 'servicio',
+    //                 attributes: ['id', 'nombre', 'precio', 'duracion']
+    //             },
+    //             {
+    //                 model: models.User,
+    //                 as: 'usuario',
+    //                 attributes: ['id', 'nombre', 'email']
+    //             }
+    //         ]
+    //     });
+    // }
+
     async findByDateAndService(fecha, servicioId) {
         return await models.Appointment.findOne({
             where: { fecha, servicioId }

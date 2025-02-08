@@ -58,10 +58,17 @@ const AppointmentSchema = {
         validate: {
             isDate: true,
             isFuture(value) {
+
                 if (value < new Date()) {
                     throw new Error('La fecha de la cita debe ser futura');
                 }
             }
+            // isFuture(value) {
+            //     const now = new Date();
+            //     if (new Date(value) < now) {
+            //         throw new Error('La fecha de la cita debe ser futura');
+            //     }
+            // }
         }
     },
     estado: {

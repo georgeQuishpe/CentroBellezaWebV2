@@ -1,5 +1,8 @@
 const express = require('express');
+const jwt = require('jsonwebtoken'); // Añade esta línea
 const router = express.Router();
+const { config } = require('../config/config'); // Asegúrate de que esta importación existe
+
 const { signup, login, recoverPassword, resetPassword } = require('../controllers/auth.controller');
 
 // Rutas de autenticación
@@ -16,7 +19,7 @@ router.post('/refresh-token', async (req, res) => {
 
         // Verificar token actual
         const decoded = jwt.verify(token, config.jwtSecret, { ignoreExpiration: true });
-        
+
         // Buscar usuario
         const user = await service.findUserById(decoded.sub);
         if (!user) {
@@ -34,12 +37,12 @@ router.post('/refresh-token', async (req, res) => {
 
         // Devolver nuevo token
         res.json({ token: newToken });
-        
+
     } catch (error) {
         console.error('Error refreshing token:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             message: 'Error refreshing token',
-            error: error.message 
+            error: error.message
         });
     }
 });

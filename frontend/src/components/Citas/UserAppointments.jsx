@@ -139,9 +139,9 @@ export function UserAppointments({ userId }) {
                     {appointment.servicio?.nombre || "Servicio no especificado"}
                   </div>
                   <div className="text-sm text-gray-600 mt-1">
-                    {/* Mostrar el precio y duración */}$
-                    {appointment.servicio?.precio} -{" "}
-                    {appointment.servicio?.duracion} minutos
+                    {/* Mostrar el precio y duración */}$ $
+                    {appointment.servicio?.precio || "0"} -{" "}
+                    {appointment.servicio?.duracion || "0"} minutos
                   </div>
                   {/* <div className="text-sm text-gray-600 flex items-center mt-1">
                     <Calendar className="mr-2 text-gray-400" size={16} />

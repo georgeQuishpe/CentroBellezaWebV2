@@ -1,7 +1,7 @@
 const AppointmentsRepository = require('../repositories/appointments.repository');
 
 class AppointmentsService {
-    constructor() {}
+    constructor() { }
 
     async create(data) {
         try {
@@ -17,6 +17,28 @@ class AppointmentsService {
         }
     }
 
+    // async create(data) {
+    //     try {
+    //         // Validar fecha
+    //         if (new Date(data.fecha) < new Date()) {
+    //             throw new Error("La fecha de la cita debe ser futura");
+    //         }
+
+    //         const existingAppointment = await AppointmentsRepository.findByDateAndService(data.fecha, data.servicioId);
+    //         if (existingAppointment) {
+    //             throw new Error("El horario ya está reservado");
+    //         }
+
+    //         const appointment = await AppointmentsRepository.create(data);
+
+    //         // Retornar con relaciones
+    //         return await AppointmentsRepository.findById(appointment.id);
+    //     } catch (error) {
+    //         console.error("Error en create:", error);
+    //         throw error;
+    //     }
+    // }
+
     async find() {
         return await AppointmentsRepository.findAll();
     }
@@ -26,7 +48,16 @@ class AppointmentsService {
     }
 
     async findByUser(userId) {
-        return await AppointmentsRepository.findByUser(userId);
+        // return await AppointmentsRepository.findByUser(userId);
+        return await AppointmentsRepository.findByUser(userId, {
+            include: [
+                {
+                    model: models.Service,
+                    as: 'servicio',
+                    attributes: ['nombre', 'precio', 'duracion']
+                }
+            ]
+        });
     }
 
     async update(id, data, userRole) {
@@ -35,7 +66,7 @@ class AppointmentsService {
 
             const updatedAppointment = await AppointmentsRepository.update(id, data);
             if (!updatedAppointment) throw new Error("Cita no encontrada");
-            
+
             return updatedAppointment;
         } catch (error) {
             console.error("Error en update:", error);
