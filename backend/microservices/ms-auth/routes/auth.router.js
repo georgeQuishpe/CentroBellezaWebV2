@@ -17,8 +17,15 @@ router.post('/refresh-token', async (req, res) => {
             return res.status(401).json({ message: 'No token provided' });
         }
 
+        // Asegúrate que config.jwtSecret existe
+        if (!config.jwtSecret) {
+            throw new Error('JWT secret not configured');
+        }
+
         // Verificar token actual
-        const decoded = jwt.verify(token, config.jwtSecret, { ignoreExpiration: true });
+        // const decoded = jwt.verify(token, config.jwtSecret, { ignoreExpiration: true });
+        // Verifica el token con la clave secreta
+        const decoded = jwt.verify(token, config.jwtSecret);
 
         // Buscar usuario
         const user = await service.findUserById(decoded.sub);

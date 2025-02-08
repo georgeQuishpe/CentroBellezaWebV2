@@ -1,5 +1,7 @@
 const AppointmentsRepository = require('../repositories/appointments.repository');
 const { models } = require('../libs/sequelize');
+const axios = require('axios');
+
 
 class AppointmentsService {
     constructor() { }
@@ -48,17 +50,93 @@ class AppointmentsService {
         return await AppointmentsRepository.findById(id);
     }
 
+    // async findByUser(userId) {
+    //     // return await AppointmentsRepository.findByUser(userId);
+    //     return await AppointmentsRepository.findByUser(userId, {
+    //         include: [
+    //             {
+    //                 model: models.Service,
+    //                 as: 'servicio',
+    //                 attributes: ['nombre', 'precio', 'duracion']
+    //             }
+    //         ]
+    //     });
+    // }
     async findByUser(userId) {
-        // return await AppointmentsRepository.findByUser(userId);
-        return await AppointmentsRepository.findByUser(userId, {
-            include: [
-                {
-                    model: models.Service,
-                    as: 'servicio',
-                    attributes: ['nombre', 'precio', 'duracion']
-                }
-            ]
-        });
+        try {
+            const appointments = await AppointmentsRepository.findByUser(userId);
+
+            try {
+
+                // Obtener datos de servicios
+                // Obtener datos de servicios con retry y timeout
+                // const servicesData = await axios.get(`http://ms-services:5002/api/v1/services`...);
+
+                console.log('Intentando conectar a ms-services...');
+                const servicesUrl = 'http://ms-services:5002/api/v1/services';
+                console.log('URL del servicio:', servicesUrl);
+
+                // const servicesData = await axios.get(`http://ms-services:5002/api/v1/services`, {
+                //     timeout: 5000,
+                //     retry: 3,
+                //     retryDelay: 1000
+                // });
+
+                const servicesData = await axios.get(servicesUrl, {
+                    timeout: 5000,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                console.log('Respuesta recibida de ms-services');
+
+                const services = servicesData.data;
+
+                // Obtener datos de usuario
+                // Obtener datos de usuario
+                const userData = await axios.get(`http://ms-auth:5001/api/v1/users/${userId}`, {
+                    timeout: 5000
+                });
+                const user = userData.data;
+
+                // Mapear y combinar la información
+                return appointments.map(appointment => {
+                    const service = services.find(s => s.id === appointment.servicioId);
+                    return {
+                        // ...appointment.toJSON(),
+                        // servicio: service || null,
+                        // usuario: user || null
+                        ...appointment.toJSON(),
+                        servicio: service || {
+                            nombre: "Servicio no disponible",
+                            precio: 0,
+                            duracion: 0
+                        },
+                        usuario: user || null
+                    };
+                });
+            } catch (serviceError) {
+                console.error("Error al obtener datos externos:", serviceError);
+                // Retornar las citas con información mínima en caso de error
+                return appointments.map(appointment => ({
+                    ...appointment.toJSON(),
+                    servicio: {
+                        nombre: "Servicio no disponible",
+                        precio: 0,
+                        duracion: 0
+                    },
+                    usuario: null
+                }));
+            }
+        } catch (error) {
+            console.error('Error detallado:', {
+                code: error.code,
+                message: error.message,
+                config: error.config
+            });
+            throw error;
+        }
     }
 
     async update(id, data, userRole) {

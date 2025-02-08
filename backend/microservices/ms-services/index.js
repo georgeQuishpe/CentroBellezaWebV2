@@ -11,7 +11,7 @@ const ALLOWED_ORIGINS = [
   "http://localhost:5000",
   "http://ms-auth:5000",
   "http://ms-services:5000",
-  "http://ms-appointments:5000", 
+  "http://ms-appointments:5000",
   "http://ms-messages:5000",
 
 ];
@@ -33,6 +33,13 @@ app.use(express.json());
 
 app.get('/ms-services', (req, res) => {
   res.send('Conexión exitosa con el Service services!');
+});
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
 });
 
 // Manejo de errores para Express
