@@ -16,18 +16,36 @@ export function middleware(request) {
             //     return NextResponse.redirect(new URL('/client/dashboard', request.url));
             // }
 
+            // if (userData.rol === 'Admin') {
+            //     if (!request.nextUrl.pathname.startsWith('/admin')) {
+            //         return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+            //     }
+            // } else {
+            //     if (request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/client')) {
+            //         return NextResponse.redirect(new URL('/user/dashboard', request.url));
+            //     }
+            // }
+
+            // Verificar explícitamente el rol y la ruta
             if (userData.rol === 'Admin') {
+                console.log('Usuario Admin detectado, verificando ruta:', request.nextUrl.pathname);
+
+                // Si es admin y NO está en una ruta de admin, redirigir a admin dashboard
                 if (!request.nextUrl.pathname.startsWith('/admin')) {
+                    console.log('Redirigiendo admin a /admin/dashboard');
                     return NextResponse.redirect(new URL('/admin/dashboard', request.url));
                 }
             } else {
-                if (request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/client')) {
+                // Si es cliente y está intentando acceder a rutas de admin, redirigir a user dashboard
+                if (request.nextUrl.pathname.startsWith('/admin')) {
+                    console.log('Cliente intentando acceder a ruta admin, redirigiendo a /user/dashboard');
                     return NextResponse.redirect(new URL('/user/dashboard', request.url));
                 }
             }
         }
     } catch (error) {
         // Si hay error al parsear el JSON, redirigir a login
+        console.error('Error en middleware:', error);
         return NextResponse.redirect(new URL('/login', request.url));
     }
 
@@ -36,9 +54,13 @@ export function middleware(request) {
 
 export const config = {
     matcher: [
+        // '/admin/:path*',
+        // '/user/:path*',
+        // '/client/:path*',
+        // '/dashboard/:path*'
         '/admin/:path*',
         '/user/:path*',
-        '/client/:path*',
-        '/dashboard/:path*'
+        '/dashboard/:path*',
+        '/login'
     ]
 };

@@ -40,7 +40,8 @@ export default function LoginPage() {
 
       // Guardar datos de usuario
       authService.setAuth(data)
-
+      console.log('Datos del usuario:', data.user);
+      console.log('Rol del usuario:', data.user.rol);
       // Redirección basada en rol
       // if (data.rol === 'Admin') {
       //   router.push('/admin/dashboard')
@@ -48,15 +49,18 @@ export default function LoginPage() {
       //   router.push('/user/dashboard')
       // }
 
-      if (data.user.rol === 'Admin') {  // Asegúrate de que coincida exactamente
-        router.push('/admin/dashboard')
+      // if (data.user.rol === 'Admin') {  // Asegúrate de que coincida exactamente
+      //   router.push('/admin/dashboard')
+      // } else {
+      //   router.push('/user/dashboard')
+      // }
+
+      if (data.user.rol === 'Admin') {
+        await router.push('/admin/dashboard');
       } else {
-        router.push('/user/dashboard')
+        await router.push('/user/dashboard');
       }
 
-      // Añade esto después de recibir la respuesta del login
-      console.log('Datos del usuario:', data.user);
-      console.log('Rol del usuario:', data.user.rol);
 
     } catch (err) {
       setError(err.message)
