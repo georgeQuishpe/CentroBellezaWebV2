@@ -15,11 +15,26 @@ class AppointmentsRepository {
         return await models.Appointment.findByPk(id);
     }
 
-    async findByUser(userId) {
+    // async findByUser(userId) {
+    //     return await models.Appointment.findAll({
+    //         where: { usuarioId: userId }
+    //     });
+    // }
+
+    async findByUser(userId, options = {}) {
         return await models.Appointment.findAll({
-            where: { usuarioId: userId }
+            where: { usuarioId: userId },
+            ...options,
+            include: [
+                {
+                    model: models.Service,
+                    as: 'servicio',
+                    attributes: ['nombre', 'precio', 'duracion']
+                }
+            ]
         });
     }
+
 
     //     async findByUser(userId) {
     //     return await models.Appointment.findAll({

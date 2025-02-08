@@ -1,4 +1,5 @@
 const AppointmentsRepository = require('../repositories/appointments.repository');
+const { models } = require('../libs/sequelize');
 
 class AppointmentsService {
     constructor() { }
