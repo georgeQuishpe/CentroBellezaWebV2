@@ -103,7 +103,6 @@ export function ChatProvider({ children }) {
   };
 
   // const userId = getUserId();
-  // const { messages, sendMessage, connected, error } = useWebSocket(userId);
 
   // return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
   return (

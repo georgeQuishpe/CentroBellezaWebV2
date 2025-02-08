@@ -1,46 +1,69 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import io from "socket.io-client";
+import { io } from 'socket.io-client';
 import { jwtDecode } from "jwt-decode"; // Corregir la importación
 
 
 const SOCKET_SERVER_URL = "http://localhost:5004";
 
-export const useWebSocket = (userId, isAdmin = false) => {
+export const useWebSocket = (initialUserId = null, isAdmin = false) => {
     const [messages, setMessages] = useState([]);
     const [connected, setConnected] = useState(false);
     const [error, setError] = useState(null);
     const [activeChats, setActiveChats] = useState([]);
     const [selectedUserId, setSelectedUserId] = useState(null);
+    const [userId, setUserId] = useState(initialUserId);
     const socketRef = useRef(null);
     const isMounted = useRef(true); // Bandera para evitar actualizaciones después del desmontaje
     // const jwt = require('jsonwebtoken');
 
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
 
         // Si no hay userId, no intentamos conectar
-        if (!userId) {
-            console.error('No se proporcionó userId');
-            setError('No hay usuario autenticado');
-            return;
-        }
-
-        const token = localStorage.getItem('token');
-        // const decoded = jwt_decode(token);
-        // console.log('Token decodificado:', decoded);
-
-        // Si estamos en la página de login, no mostramos error por falta de token
-        // if (!token && window.location.pathname !== '/login') {
-        //     console.error('No se encontró token de autenticación');
-        //     setError('No se encontró token de autenticación');
-        //     return;
-        // }
-
+        // if (!userId) {
+            //     console.error('No se proporcionó userId');
+            //     setError('No hay usuario autenticado');
+            //     return;
+            // }
+            
+            
         if (!token) {
             setError('No se encontró token de autenticación');
             return;
         }
+        
+        if (!userId) {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const decoded = jwtDecode(token);
+                    setUserId(decoded.sub);
+                } catch (error) {
+                    console.error("Error decodificando token:", error);
+                    setError('Error al obtener la identificación del usuario');
+                    return;
+                }
+            } else {
+                setError('No hay usuario autenticado');
+                return;
+            }
+        }
+        
+        
+        
+        // const decoded = jwt_decode(token);
+        // console.log('Token decodificado:', decoded);
+        
+        // Si estamos en la página de login, no mostramos error por falta de token
+        // if (!token && window.location.pathname !== '/login') {
+            //     console.error('No se encontró token de autenticación');
+            //     setError('No se encontró token de autenticación');
+            //     return;
+            // }
+            
+
 
         const connectSocket = async () => {
             try {
@@ -49,10 +72,6 @@ export const useWebSocket = (userId, isAdmin = false) => {
                     socketRef.current.disconnect();
                 }
 
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    throw new Error('No token found');
-                }
 
                 // Verificar si el token está expirado
                 const decoded = jwtDecode(token); // Usar la función importada
@@ -70,87 +89,90 @@ export const useWebSocket = (userId, isAdmin = false) => {
                 //     socketRef.current.disconnect();
                 // }
 
-                // Inicializar el socket
-                socketRef.current = io(SOCKET_SERVER_URL, {
-                    path: '/ms-messages/socket.io',
-                    // query: { userId, isAdmin },
-                    query: {
-                        userId: decoded.sub, // Usar el ID del token
-                        isAdmin
-                    },
-                    auth: token ? { token } : undefined,
-                    transports: ['websocket', 'polling'],
-                    reconnection: true,
-                    reconnectionAttempts: 5,
-                    reconnectionDelay: 1000,
-                    timeout: 10000
-                    // forceNew: true,
-                    // autoConnect: true
-                });
+                if(userId){
 
-                // Listeners del socket
-                socketRef.current.on("connect", () => {
-                    console.log("WebSocket conectado con ID:", socketRef.current.id);
-                    setConnected(true);
-                    setError(null);
-                });
+                    // Inicializar el socket
+                    socketRef.current = io(SOCKET_SERVER_URL, {
+                        path: '/ms-messages/socket.io',
+                        // query: { userId, isAdmin },
+                        query: {
+                            userId: decoded.sub, // Usar el ID del token
+                            isAdmin
+                        },
+                        auth: token ? { token } : undefined,
+                        transports: ['websocket', 'polling'],
+                        reconnection: true,
+                        reconnectionAttempts: 5,
+                        reconnectionDelay: 1000,
+                        timeout: 10000
+                        // forceNew: true,
+                        // autoConnect: true
+                    });
 
-                // socketRef.current.on("message", (message) => {
-                //     console.log("Mensaje recibido:", message);
-                //     setMessages((prev) => [...prev, message]);
-                // });
+                    // Listeners del socket
+                    socketRef.current.on("connect", () => {
+                        console.log("WebSocket conectado con ID:", socketRef.current.id);
+                        setConnected(true);
+                        setError(null);
+                    });
 
-                socketRef.current.on('messages', (receivedMessages) => {
-                    console.log('Mensajes recibidos:', receivedMessages);
-                    setMessages(receivedMessages);
-                });
+                    // socketRef.current.on("message", (message) => {
+                    //     console.log("Mensaje recibido:", message);
+                    //     setMessages((prev) => [...prev, message]);
+                    // });
 
-                socketRef.current.on('message', (message) => {
-                    console.log('Nuevo mensaje:', message);
-                    setMessages((prevMessages) => [...prevMessages, message]);
-                });
+                    socketRef.current.on('messages', (receivedMessages) => {
+                        console.log('Mensajes recibidos:', receivedMessages);
+                        setMessages(receivedMessages);
+                    });
 
-                socketRef.current.on("previousMessages", (previousMessages) => {
-                    console.log("Mensajes históricos recibidos:", previousMessages);
-                    setMessages(previousMessages || []);
-                });
+                    socketRef.current.on('message', (message) => {
+                        console.log('Nuevo mensaje:', message);
+                        setMessages((prevMessages) => [...prevMessages, message]);
+                    });
 
-                socketRef.current.on("disconnect", () => {
-                    console.log("WebSocket desconectado");
-                    setConnected(false);
-                });
+                    socketRef.current.on("previousMessages", (previousMessages) => {
+                        console.log("Mensajes históricos recibidos:", previousMessages);
+                        setMessages(previousMessages || []);
+                    });
 
-                // socketRef.current.on("connect_error", (err) => {
-                //     console.error("Error de conexión:", err.message);
-                //     console.log("Error de conexión detallado:", {
-                //         error: err,
-                //         message: err.message,
-                //         description: err.description,
-                //         context: err.context
-                //     });
-                //     setError(err.message);
-                //     setConnected(false);
-                // });
+                    socketRef.current.on("disconnect", () => {
+                        console.log("WebSocket desconectado");
+                        setConnected(false);
+                    });
 
-                socketRef.current.on('connect_error', (error) => {
-                    console.error('Error de conexión:', error.message);
-                    setError(error.message);
-                    setConnected(false);
-                });
+                    // socketRef.current.on("connect_error", (err) => {
+                    //     console.error("Error de conexión:", err.message);
+                    //     console.log("Error de conexión detallado:", {
+                    //         error: err,
+                    //         message: err.message,
+                    //         description: err.description,
+                    //         context: err.context
+                    //     });
+                    //     setError(err.message);
+                    //     setConnected(false);
+                    // });
 
-                socketRef.current.on("activeChats", (chats) => {
-                    if (isAdmin) {
-                        console.log("Chats activos recibidos:", chats);
-                        setActiveChats(chats || []);
-                    }
-                });
+                    socketRef.current.on('connect_error', (error) => {
+                        console.error('Error de conexión:', error.message);
+                        setError(error.message);
+                        setConnected(false);
+                    });
 
-                // Cleanup al desmontar
-                return () => {
-                    if (socketRef.current) {
-                        console.log('Desconectando WebSocket...');
-                        socketRef.current.disconnect();
-                    }
+                    socketRef.current.on("activeChats", (chats) => {
+                        if (isAdmin) {
+                            console.log("Chats activos recibidos:", chats);
+                            setActiveChats(chats || []);
+                        }
+                    });
+
+                    // Cleanup al desmontar
+                    return () => {
+                        if (socketRef.current) {
+                            console.log('Desconectando WebSocket...');
+                            socketRef.current.disconnect();
+                        }
+                    };
                 };
             } catch (err) {
                 console.error('Error al inicializar WebSocket:', err);
