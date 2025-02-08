@@ -116,8 +116,11 @@ io.use((socket, next) => {
     console.log('Token verificado correctamente:', decoded);
     next();
   } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return next(new Error('Token expired'));
+    }
     console.error('Error de autenticación:', err);
-    next(new Error('Authentication error: ' + err.message));
+    return next(new Error('Authentication error: ' + err.message));
   }
 });
 

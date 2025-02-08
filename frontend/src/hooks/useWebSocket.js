@@ -48,7 +48,7 @@ export const useWebSocket = (userId, isAdmin = false) => {
                 if (socketRef.current) {
                     socketRef.current.disconnect();
                 }
-        
+
                 const token = localStorage.getItem('token');
                 if (!token) {
                     throw new Error('No token found');
@@ -74,9 +74,9 @@ export const useWebSocket = (userId, isAdmin = false) => {
                 socketRef.current = io(SOCKET_SERVER_URL, {
                     path: '/ms-messages/socket.io',
                     // query: { userId, isAdmin },
-                    query: { 
+                    query: {
                         userId: decoded.sub, // Usar el ID del token
-                        isAdmin 
+                        isAdmin
                     },
                     auth: token ? { token } : undefined,
                     transports: ['websocket', 'polling'],
@@ -160,7 +160,7 @@ export const useWebSocket = (userId, isAdmin = false) => {
 
         connectSocket();
 
-        
+
         return () => {
             if (socketRef.current) {
                 console.log('Desconectando WebSocket...');
@@ -257,9 +257,17 @@ export const useWebSocket = (userId, isAdmin = false) => {
     // };
 
     return {
+        // messages,
+        // sendMessage,
+        // connected,
+        // error
         messages,
         sendMessage,
         connected,
-        error
+        error,
+        activeChats,
+        selectedUserId,
+        selectChat,
+        loadChatMessages
     };
 };
