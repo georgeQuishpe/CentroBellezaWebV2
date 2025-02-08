@@ -12,8 +12,18 @@ export function middleware(request) {
         if (user) {
             const userData = JSON.parse(user);
             // Redirigir si intenta acceder a rutas de admin sin ser admin
-            if (userData.rol !== 'Admin' && request.nextUrl.pathname.startsWith('/admin')) {
-                return NextResponse.redirect(new URL('/client/dashboard', request.url));
+            // if (userData.rol !== 'Admin' && request.nextUrl.pathname.startsWith('/admin')) {
+            //     return NextResponse.redirect(new URL('/client/dashboard', request.url));
+            // }
+
+            if (userData.rol === 'Admin') {
+                if (!request.nextUrl.pathname.startsWith('/admin')) {
+                    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+                }
+            } else {
+                if (request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/client')) {
+                    return NextResponse.redirect(new URL('/user/dashboard', request.url));
+                }
             }
         }
     } catch (error) {
@@ -27,6 +37,7 @@ export function middleware(request) {
 export const config = {
     matcher: [
         '/admin/:path*',
+        '/user/:path*',
         '/client/:path*',
         '/dashboard/:path*'
     ]
