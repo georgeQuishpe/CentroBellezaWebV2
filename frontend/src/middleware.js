@@ -11,6 +11,8 @@ export function middleware(request) {
     try {
         if (user) {
             const userData = JSON.parse(user);
+            console.log('Middleware - Usuario:', userData);
+
             // Redirigir si intenta acceder a rutas de admin sin ser admin
             // if (userData.rol !== 'Admin' && request.nextUrl.pathname.startsWith('/admin')) {
             //     return NextResponse.redirect(new URL('/client/dashboard', request.url));
@@ -26,22 +28,38 @@ export function middleware(request) {
             //     }
             // }
 
-            // Verificar explícitamente el rol y la ruta
-            if (userData.rol === 'Admin') {
-                console.log('Usuario Admin detectado, verificando ruta:', request.nextUrl.pathname);
+            // // Verificar explícitamente el rol y la ruta
+            // if (userData.rol === 'Admin') {
+            //     console.log('Usuario Admin detectado, verificando ruta:', request.nextUrl.pathname);
 
-                // Si es admin y NO está en una ruta de admin, redirigir a admin dashboard
-                if (!request.nextUrl.pathname.startsWith('/admin')) {
-                    console.log('Redirigiendo admin a /admin/dashboard');
+            //     // Si es admin y NO está en una ruta de admin, redirigir a admin dashboard
+            //     if (!request.nextUrl.pathname.startsWith('/admin')) {
+            //         console.log('Redirigiendo admin a /admin/dashboard');
+            //         return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+            //     }
+            // } else {
+            //     // Si es cliente y está intentando acceder a rutas de admin, redirigir a user dashboard
+            //     if (request.nextUrl.pathname.startsWith('/admin')) {
+            //         console.log('Cliente intentando acceder a ruta admin, redirigiendo a /user/dashboard');
+            //         return NextResponse.redirect(new URL('/user/dashboard', request.url));
+            //     }
+            // }
+
+
+            if (userData.rol === 'Admin') {
+                // Si es admin y trata de acceder a rutas de usuario
+                if (request.nextUrl.pathname.startsWith('/user')) {
+                    console.log('Admin intentando acceder a ruta de usuario');
                     return NextResponse.redirect(new URL('/admin/dashboard', request.url));
                 }
             } else {
-                // Si es cliente y está intentando acceder a rutas de admin, redirigir a user dashboard
+                // Si es usuario y trata de acceder a rutas de admin
                 if (request.nextUrl.pathname.startsWith('/admin')) {
-                    console.log('Cliente intentando acceder a ruta admin, redirigiendo a /user/dashboard');
+                    console.log('Usuario intentando acceder a ruta de admin');
                     return NextResponse.redirect(new URL('/user/dashboard', request.url));
                 }
             }
+
         }
     } catch (error) {
         // Si hay error al parsear el JSON, redirigir a login

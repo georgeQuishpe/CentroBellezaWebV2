@@ -44,6 +44,20 @@ export default function AdminDashboard() {
         setMounted(true);
     }, []);
 
+    useEffect(() => {
+        if (!loading) {
+            if (!user) {
+                router.push('/login');
+            } else if (user.rol !== 'Admin') {
+                console.log('Usuario no admin intentando acceder:', user);
+                router.push('/user/dashboard');
+            }
+        }
+    }, [user, loading, router]);
+
+    if (loading) return <div>Cargando...</div>;
+    if (!user || user.rol !== 'Admin') return null;
+
     // Efecto para cargar datos (combinado con autenticación)
     useEffect(() => {
         const initializeAdmin = async () => {

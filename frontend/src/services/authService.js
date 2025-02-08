@@ -9,8 +9,19 @@ export const authService = {
     },
 
     setAuth(data) {
-        localStorage.setItem('user', JSON.stringify(data));
-        document.cookie = `user=${JSON.stringify(data)}; path=/; max-age=86400`;
+        // localStorage.setItem('user', JSON.stringify(data));
+        // document.cookie = `user=${JSON.stringify(data)}; path=/; max-age=86400`;
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+        }
+        if (data.user) {
+            const userData = {
+                ...data.user,
+                token: data.token
+            };
+            localStorage.setItem('user', JSON.stringify(userData));
+            document.cookie = `user=${JSON.stringify(userData)}; path=/`;
+        }
     },
 
     logout() {

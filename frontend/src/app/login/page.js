@@ -38,10 +38,14 @@ export default function LoginPage() {
         console.error('No se recibió token del servidor');
       }
 
-      // Guardar datos de usuario
-      authService.setAuth(data)
       console.log('Datos del usuario:', data.user);
       console.log('Rol del usuario:', data.user.rol);
+
+      // Guardar datos de usuario
+      authService.setAuth(data)
+      // En login/page.js después del fetch
+      console.log('Respuesta completa:', data);
+
       // Redirección basada en rol
       // if (data.rol === 'Admin') {
       //   router.push('/admin/dashboard')
@@ -55,9 +59,17 @@ export default function LoginPage() {
       //   router.push('/user/dashboard')
       // }
 
-      if (data.user.rol === 'Admin') {
+      // if (data.user.rol === 'Admin') {
+      //   await router.push('/admin/dashboard');
+      // } else {
+      //   await router.push('/user/dashboard');
+      // }
+
+      if (data.user.rol.trim() === 'Admin') {
+        console.log('Redirigiendo a dashboard admin');
         await router.push('/admin/dashboard');
       } else {
+        console.log('Redirigiendo a dashboard usuario');
         await router.push('/user/dashboard');
       }
 
