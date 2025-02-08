@@ -4,6 +4,8 @@ const cors = require('cors');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const routerApi = require('./routes');
+const { config } = require('./config/config');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const httpServer = createServer(app);
@@ -14,7 +16,7 @@ const ALLOWED_ORIGINS = [
   "http://localhost:5000",
   "http://ms-auth:5000",
   "http://ms-services:5000",
-  "http://ms-appointments:5000", 
+  "http://ms-appointments:5000",
   "http://ms-messages:5000",
 
 ];
@@ -57,7 +59,7 @@ app.use(express.json());
 // Manejo de eventos de Socket.IO
 io.on('connection', (socket) => {
   console.log('Cliente conectado:', socket.id);
-  
+
   socket.on('disconnect', () => {
     console.log('Cliente desconectado:', socket.id);
   });
@@ -99,6 +101,26 @@ routerApi(app);
 
 const port = process.env.PORT_MESSAGES || 5004;
 const host = '0.0.0.0';
+
+// Middleware de autenticación para Socket.IO
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+      return next(new Error('Authentication error: Token not provided'));
+    }
+
+    console.log('JWT Secret usado para verificación:', config.jwtSecret); // Para debug
+    const decoded = jwt.verify(token, config.jwtSecret);
+    socket.user = decoded;
+    console.log('Token verificado correctamente:', decoded);
+    next();
+  } catch (err) {
+    console.error('Error de autenticación:', err);
+    next(new Error('Authentication error: ' + err.message));
+  }
+});
+
 
 // Inicio del servidor con manejo de errores
 httpServer.listen(port, host, () => {

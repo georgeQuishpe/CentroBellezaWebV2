@@ -3,9 +3,11 @@ const jwt = require('jsonwebtoken');
 const { sendEmail } = require('./mailer.service');
 const UsersService = require('./users.service');
 
+
+
 class AuthService {
     constructor() {
-        this.jwtSecret = process.env.JWT_SECRET || 'tu_clave_secreta';
+        this.jwtSecret = process.env.JWT_SECRET || 'una_clave_secreta_muy_larga_y_segura';
         this.usersService = new UsersService();
     }
 
@@ -17,9 +19,21 @@ class AuthService {
         if (!isPasswordValid) throw new Error('Contraseña incorrecta');
 
         const token = this.generateToken(user);
-        const { password: _, ...userWithoutPassword } = user.toJSON();
+        const refreshToken = this.generateRefreshToken(user);
 
-        return { ...userWithoutPassword, token };
+        // const { password: _, ...userWithoutPassword } = user.toJSON();
+
+        // return { ...userWithoutPassword, token };
+
+        return {
+            user: {
+                id: user.id,
+                email: user.email,
+                rol: user.rol
+            },
+            token,
+            refreshToken
+        };
     }
 
     async signup(userData) {
@@ -61,15 +75,41 @@ class AuthService {
         return { ...userWithoutSensitiveInfo, token };
     }
 
+    // isTokenExpired = (token) => {
+    //     try {
+    //         const decoded = jwtDecode(token);
+    //         if (!decoded.exp) return true;
+
+    //         // exp está en segundos, Date.now() en milisegundos
+    //         return Date.now() >= decoded.exp * 1000;
+    //     } catch (error) {
+    //         return true;
+    //     }
+    // };
+
     generateToken(user) {
         const payload = {
             sub: user.id,
             email: user.email,
             rol: user.rol,
-            iat: Date.now()
+            // iat: Date.now(),
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + (60 * 60) // 1 hora de expiración
         };
 
-        return jwt.sign(payload, this.jwtSecret, { expiresIn: '24h' });
+        // return jwt.sign(payload, this.jwtSecret, { expiresIn: '24h' });
+        return jwt.sign(payload, this.jwtSecret);
+
+    }
+
+    generateRefreshToken(user) {
+        const payload = {
+            sub: user.id,
+            type: 'refresh',
+            iat: Math.floor(Date.now() / 1000),
+            exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 días
+        };
+        return jwt.sign(payload, this.jwtSecret);
     }
 
     generateRecoveryCode() {

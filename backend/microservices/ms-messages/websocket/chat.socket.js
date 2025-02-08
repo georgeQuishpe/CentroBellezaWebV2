@@ -1,4 +1,4 @@
-const ChatMessagesService = require('../services/chatMessages.service.js');
+const ChatMessagesService = require('../services/chatMessages.service');
 const service = new ChatMessagesService();
 
 module.exports = (io) => {
@@ -78,19 +78,27 @@ module.exports = (io) => {
                 console.log(`Mensaje enviado al remitente ${messageData.userId}`);
 
                 // Notificar al destinatario
-                if (isAdmin) {
-                    const clientSocket = connectedUsers.get(messageData.toUserId);
-                    if (clientSocket) {
-                        io.to(clientSocket).emit('message', newMessage);
-                        console.log(`Mensaje enviado al cliente ${messageData.toUserId}`);
-                    }
-                } else {
-                    // Notificar a todos los admins
+                // if (isAdmin) {
+                //     const clientSocket = connectedUsers.get(messageData.toUserId);
+                //     if (clientSocket) {
+                //         io.to(clientSocket).emit('message', newMessage);
+                //         console.log(`Mensaje enviado al cliente ${messageData.toUserId}`);
+                //     }
+                // } else {
+                //     // Notificar a todos los admins
+                //     Array.from(adminSockets).forEach(adminSocketId => {
+                //         io.to(adminSocketId).emit('message', newMessage);
+                //     });
+                //     console.log('Mensaje enviado a todos los admins');
+                // }
+
+                if (messageData.toUserId === 'admin') {
                     Array.from(adminSockets).forEach(adminSocketId => {
                         io.to(adminSocketId).emit('message', newMessage);
                     });
-                    console.log('Mensaje enviado a todos los admins');
                 }
+
+
             } catch (error) {
                 console.error('Error al enviar mensaje:', error);
                 socket.emit('error', { message: error.message });
@@ -110,3 +118,4 @@ module.exports = (io) => {
         });
     });
 };
+        

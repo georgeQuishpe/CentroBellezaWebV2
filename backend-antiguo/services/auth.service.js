@@ -6,7 +6,7 @@ const service = new UserService();
 
 class AuthService {
     constructor() {
-        this.jwtSecret = process.env.JWT_SECRET || 'tu_clave_secreta'; // Idealmente en variables de entorno
+        this.jwtSecret = process.env.JWT_SECRET || 'una_clave_secreta_muy_larga_y_segura'; // Idealmente en variables de entorno
     }
 
     async login(email, password) {

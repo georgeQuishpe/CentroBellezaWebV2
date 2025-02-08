@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import io from "socket.io-client";
+import { jwtDecode } from "jwt-decode"; // Corregir la importación
+
 
 const SOCKET_SERVER_URL = "http://localhost:5004";
 
@@ -12,88 +14,192 @@ export const useWebSocket = (userId, isAdmin = false) => {
     const [selectedUserId, setSelectedUserId] = useState(null);
     const socketRef = useRef(null);
     const isMounted = useRef(true); // Bandera para evitar actualizaciones después del desmontaje
+    // const jwt = require('jsonwebtoken');
+
 
     useEffect(() => {
-        // Limpiar cualquier conexión existente
-        if (socketRef.current) {
-            socketRef.current.disconnect();
+
+        // Si no hay userId, no intentamos conectar
+        if (!userId) {
+            console.error('No se proporcionó userId');
+            setError('No hay usuario autenticado');
+            return;
         }
 
-        // Inicializar el socket
-        socketRef.current = io(SOCKET_SERVER_URL, {
-            path: '/ms-messages/socket.io',
-            query: { userId, isAdmin },
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-            timeout: 10000,
-            forceNew: true,
-            autoConnect: true
-        });
+        const token = localStorage.getItem('token');
+        // const decoded = jwt_decode(token);
+        // console.log('Token decodificado:', decoded);
 
-        // Listeners del socket
-        socketRef.current.on("connect", () => {
-            console.log("WebSocket conectado con ID:", socketRef.current.id);
-            setConnected(true);
-            setError(null);
-        });
+        // Si estamos en la página de login, no mostramos error por falta de token
+        // if (!token && window.location.pathname !== '/login') {
+        //     console.error('No se encontró token de autenticación');
+        //     setError('No se encontró token de autenticación');
+        //     return;
+        // }
 
-        socketRef.current.on("message", (message) => {
-            console.log("Mensaje recibido:", message);
-            setMessages((prev) => [...prev, message]);
-        });
+        if (!token) {
+            setError('No se encontró token de autenticación');
+            return;
+        }
 
-        socketRef.current.on("previousMessages", (previousMessages) => {
-            console.log("Mensajes históricos recibidos:", previousMessages);
-            setMessages(previousMessages || []);
-        });
+        const connectSocket = async () => {
+            try {
 
-        socketRef.current.on("disconnect", () => {
-            console.log("WebSocket desconectado");
-            setConnected(false);
-        });
+                if (socketRef.current) {
+                    socketRef.current.disconnect();
+                }
+        
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No token found');
+                }
 
-        socketRef.current.on("connect_error", (err) => {
-            console.error("Error de conexión:", err.message);
-            console.log("Error de conexión detallado:", {
-                error: err,
-                message: err.message,
-                description: err.description,
-                context: err.context
-            });
-            setError(err.message);
-        });
+                // Verificar si el token está expirado
+                const decoded = jwtDecode(token); // Usar la función importada
+                console.log('Token decodificado:', decoded);
 
-        socketRef.current.on("activeChats", (chats) => {
-            if (isAdmin) {
-                console.log("Chats activos recibidos:", chats);
-                setActiveChats(chats || []);
+
+                console.log('Token info:', {
+                    exp: decoded.exp,
+                    now: Date.now() / 1000,
+                    timeLeft: decoded.exp - (Date.now() / 1000)
+                });
+
+                // Limpiar cualquier conexión existente
+                // if (socketRef.current) {
+                //     socketRef.current.disconnect();
+                // }
+
+                // Inicializar el socket
+                socketRef.current = io(SOCKET_SERVER_URL, {
+                    path: '/ms-messages/socket.io',
+                    // query: { userId, isAdmin },
+                    query: { 
+                        userId: decoded.sub, // Usar el ID del token
+                        isAdmin 
+                    },
+                    auth: token ? { token } : undefined,
+                    transports: ['websocket', 'polling'],
+                    reconnection: true,
+                    reconnectionAttempts: 5,
+                    reconnectionDelay: 1000,
+                    timeout: 10000
+                    // forceNew: true,
+                    // autoConnect: true
+                });
+
+                // Listeners del socket
+                socketRef.current.on("connect", () => {
+                    console.log("WebSocket conectado con ID:", socketRef.current.id);
+                    setConnected(true);
+                    setError(null);
+                });
+
+                // socketRef.current.on("message", (message) => {
+                //     console.log("Mensaje recibido:", message);
+                //     setMessages((prev) => [...prev, message]);
+                // });
+
+                socketRef.current.on('messages', (receivedMessages) => {
+                    console.log('Mensajes recibidos:', receivedMessages);
+                    setMessages(receivedMessages);
+                });
+
+                socketRef.current.on('message', (message) => {
+                    console.log('Nuevo mensaje:', message);
+                    setMessages((prevMessages) => [...prevMessages, message]);
+                });
+
+                socketRef.current.on("previousMessages", (previousMessages) => {
+                    console.log("Mensajes históricos recibidos:", previousMessages);
+                    setMessages(previousMessages || []);
+                });
+
+                socketRef.current.on("disconnect", () => {
+                    console.log("WebSocket desconectado");
+                    setConnected(false);
+                });
+
+                // socketRef.current.on("connect_error", (err) => {
+                //     console.error("Error de conexión:", err.message);
+                //     console.log("Error de conexión detallado:", {
+                //         error: err,
+                //         message: err.message,
+                //         description: err.description,
+                //         context: err.context
+                //     });
+                //     setError(err.message);
+                //     setConnected(false);
+                // });
+
+                socketRef.current.on('connect_error', (error) => {
+                    console.error('Error de conexión:', error.message);
+                    setError(error.message);
+                    setConnected(false);
+                });
+
+                socketRef.current.on("activeChats", (chats) => {
+                    if (isAdmin) {
+                        console.log("Chats activos recibidos:", chats);
+                        setActiveChats(chats || []);
+                    }
+                });
+
+                // Cleanup al desmontar
+                return () => {
+                    if (socketRef.current) {
+                        console.log('Desconectando WebSocket...');
+                        socketRef.current.disconnect();
+                    }
+                };
+            } catch (err) {
+                console.error('Error al inicializar WebSocket:', err);
+                setError(err.message);
             }
-        });
+        };
 
-        // Cleanup al desmontar
+        connectSocket();
+
+        
         return () => {
-            console.log("Desconectando WebSocket...");
             if (socketRef.current) {
+                console.log('Desconectando WebSocket...');
                 socketRef.current.disconnect();
             }
         };
     }, [userId, isAdmin]);
 
 
+
     // Función para enviar mensajes
     // En useWebSocket.js (frontend)
-    const sendMessage = (content) => {
-        if (!content.trim() || !connected || (isAdmin && !selectedUserId)) return;
+    // const sendMessage = (content) => {
+    //     if (!content.trim() || !connected || (isAdmin && !selectedUserId)) return;
 
-        const messageData = {
+    //     const messageData = {
+    //         content,
+    //         userId,
+    //         toUserId: isAdmin ? selectedUserId : 'admin'
+    //     };
+
+    //     socketRef.current.emit('sendMessage', messageData);
+    // };
+
+    const sendMessage = (content, toUserId = 'admin') => {
+        if (!socketRef.current?.connected) {
+            console.error('No hay conexión con el servidor');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const decoded = jwtDecode(token);
+
+        socketRef.current.emit('message', {
             content,
-            userId,
-            toUserId: isAdmin ? selectedUserId : 'admin'
-        };
-
-        socketRef.current.emit('sendMessage', messageData);
+            // userId,
+            userId: decoded.sub,
+            toUserId
+        });
     };
 
 
@@ -138,15 +244,22 @@ export const useWebSocket = (userId, isAdmin = false) => {
         }
     }, [isAdmin]);
 
+    // return {
+    //     connected,
+    //     messages,
+    //     sendMessage,
+    //     error,
+    //     activeChats,
+    //     selectedUserId,
+    //     selectChat,
+    //     loadChatMessages,
+    //     socket: socketRef.current
+    // };
+
     return {
-        connected,
         messages,
         sendMessage,
-        error,
-        activeChats,
-        selectedUserId,
-        selectChat,
-        loadChatMessages,
-        socket: socketRef.current
+        connected,
+        error
     };
 };

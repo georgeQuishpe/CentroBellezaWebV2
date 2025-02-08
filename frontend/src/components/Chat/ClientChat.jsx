@@ -2,9 +2,37 @@
 import { useChat } from "../../context/ChatContext";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
+import { useWebSocket } from "@/hooks/useWebSocket";
 
 export function ClientChat() {
-  const { connected, messages, userId, chatOpen, setChatOpen } = useChat();
+  const { connected, messages, userId, chatOpen, setChatOpen, error } =
+    useChat();
+  const [message, setMessage] = useState("");
+  const { sendMessage } = useWebSocket(userId, false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!message.trim() || !connected) return;
+
+    sendMessage(message);
+    setMessage("");
+  };
+
+  // Si no hay userId, no mostramos el chat
+  // if (!userId) return null;
+
+  // Si hay error, mostramos un mensaje amigable
+  if (error) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-red-500">
+          {error === "No se encontró token de autenticación"
+            ? "Por favor inicia sesión para usar el chat"
+            : "Error al conectar con el chat"}
+        </p>
+      </div>
+    );
+  }
 
   // Filtrar mensajes relevantes para este cliente
   const filteredMessages = messages.filter(
@@ -42,6 +70,42 @@ export function ClientChat() {
   }
 
   return (
+    //ANTES
+
+    // <div className="flex flex-col h-[500px] bg-white rounded-lg shadow-lg">
+    //   <div className="p-4 border-b">
+    //     <h2 className="text-lg font-semibold">Chat con Soporte</h2>
+    //     <div
+    //       className={`text-sm ${connected ? "text-green-500" : "text-red-500"}`}
+    //     >
+    //       {connected ? "Conectado" : "Desconectado"}
+    //     </div>
+    //   </div>
+
+    //   <MessageList messages={messages} />
+
+    //   <form onSubmit={handleSubmit} className="p-4 border-t">
+    //     <div className="flex gap-2">
+    //       <input
+    //         type="text"
+    //         value={message}
+    //         onChange={(e) => setMessage(e.target.value)}
+    //         placeholder="Escriba su mensaje..."
+    //         className="flex-1 p-2 border rounded"
+    //         disabled={!connected}
+    //       />
+    //       <button
+    //         type="submit"
+    //         disabled={!connected || !message.trim()}
+    //         className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+    //       >
+    //         Enviar
+    //       </button>
+    //     </div>
+    //   </form>
+    // </div>
+
+    // NUEVO
     <div className="fixed bottom-4 right-4 w-80 bg-white rounded-lg shadow-xl flex flex-col overflow-hidden">
       {/* Encabezado */}
       <div className="p-4 bg-blue-500 text-white flex justify-between items-center">

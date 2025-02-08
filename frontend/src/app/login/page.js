@@ -1,8 +1,9 @@
 'use client'
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { authService } from '../../services/authService'
+import { authService } from '@/services/authService'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -29,17 +30,27 @@ export default function LoginPage() {
         throw new Error(data.message || 'Error al iniciar sesión')
       }
 
-      // Usar el servicio de autenticación
-      authService.setAuth(data);
-
-      // Modificar la parte de redirección
-      if (data.rol === 'Admin') {
-        router.push('/admin/dashboard')  // Asegúrate de que esta ruta coincida con tu estructura
+      // Guardar token
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        console.log('Token guardado:', data.token); // Para debug
       } else {
-        router.push('/user/dashboard')  // Ruta para usuarios normales
+        console.error('No se recibió token del servidor');
       }
+
+      // Guardar datos de usuario
+      authService.setAuth(data)
+
+      // Redirección basada en rol
+      if (data.rol === 'Admin') {
+        router.push('/admin/dashboard')
+      } else {
+        router.push('/user/dashboard')
+      }
+
     } catch (err) {
       setError(err.message)
+      console.error('Error en login:', err)
     }
   }
 

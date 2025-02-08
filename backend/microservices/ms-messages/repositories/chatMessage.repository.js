@@ -27,14 +27,33 @@ class ChatMessageRepository {
     }
 
     async findAllChats() {
-        const messages = await sequelize.query(`
+        // const messages = await sequelize.query(`
+        //     SELECT DISTINCT ON (u.id) 
+        //         u.id as usuarioid, u.nombre, cm.mensaje, cm.fechaenvio
+        //     FROM usuarios u
+        //     LEFT JOIN chatmensajes cm ON u.id = cm.usuarioid
+        //     WHERE u.rol = 'Cliente'
+        //     ORDER BY u.id, cm.fechaenvio DESC NULLS LAST
+        // `, { type: sequelize.QueryTypes.SELECT });
+
+        // return messages.map(msg => ({
+        //     userId: msg.usuarioid,
+        //     nombre: msg.nombre || `Usuario ${msg.usuarioid}`,
+        //     lastMessage: msg.mensaje || 'No hay mensajes',
+        //     timestamp: msg.fechaenvio
+        // }));
+
+        const messages = await models.sequelize.query(`
             SELECT DISTINCT ON (u.id) 
-                u.id as usuarioid, u.nombre, cm.mensaje, cm.fechaenvio
+                u.id as usuarioid,
+                u.nombre,
+                cm.mensaje,
+                cm.fechaenvio
             FROM usuarios u
             LEFT JOIN chatmensajes cm ON u.id = cm.usuarioid
             WHERE u.rol = 'Cliente'
             ORDER BY u.id, cm.fechaenvio DESC NULLS LAST
-        `, { type: sequelize.QueryTypes.SELECT });
+        `, { type: models.sequelize.QueryTypes.SELECT });
 
         return messages.map(msg => ({
             userId: msg.usuarioid,

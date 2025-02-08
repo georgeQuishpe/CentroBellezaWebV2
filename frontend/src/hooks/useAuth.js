@@ -32,5 +32,30 @@ export const useAuth = () => {
         checkAuth();
     }, [router]);
 
-    return { user, loading };
+
+
+
+    const refreshToken = async () => {
+        try {
+            const currentRefreshToken = localStorage.getItem('refreshToken');
+            const response = await fetch('http://localhost:5000/api/v1/auth/refresh-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ refreshToken: currentRefreshToken })
+            });
+
+            const data = await response.json();
+            if (data.token) {
+                localStorage.setItem('token', data.token);
+                return data.token;
+            }
+        } catch (error) {
+            console.error('Error refreshing token:', error);
+            return null;
+        }
+    };
+    return { user, loading, refreshToken };
+
 };

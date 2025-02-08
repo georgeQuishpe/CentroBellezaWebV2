@@ -12,6 +12,8 @@ export default function RootLayout({ children }) {
     : "guest";
 
   return (
+
+
     <html lang="es">
       <body>
         {/* Envuelve toda la aplicación con el ChatProvider */}
