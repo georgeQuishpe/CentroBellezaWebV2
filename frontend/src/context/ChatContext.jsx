@@ -9,7 +9,9 @@ const ChatContext = createContext(null);
 export function ChatProvider({ children }) {
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [contextValue, setContextValue] = useState({});
+
+  // Move useWebSocket hook to top level
+  const { messages, sendMessage, connected, error } = useWebSocket(userId);
 
   // const {
   //     connected,
@@ -57,16 +59,16 @@ export function ChatProvider({ children }) {
     const id = getUserIdFromToken();
     setUserId(id);
 
-    if (id) {
-      const { messages, sendMessage, connected, error } = useWebSocket(id);
-      setContextValue({
-        userId: id,
-        messages,
-        sendMessage,
-        connected,
-        error,
-      });
-    }
+    // if (id) {
+    //   const { messages, sendMessage, connected, error } = useWebSocket(id);
+    //   setContextValue({
+    //     userId: id,
+    //     messages,
+    //     sendMessage,
+    //     connected,
+    //     error,
+    //   });
+    // }
 
     setLoading(false);
   }, []);
@@ -94,11 +96,14 @@ export function ChatProvider({ children }) {
 
   const contextValue = {
     userId,
-    setUserId,
+    messages,
+    sendMessage,
+    connected,
+    error,
   };
 
   // const userId = getUserId();
-  const { messages, sendMessage, connected, error } = useWebSocket(userId);
+  // const { messages, sendMessage, connected, error } = useWebSocket(userId);
 
   // return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
   return (
