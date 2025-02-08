@@ -9,19 +9,30 @@ import { useAuth } from '../../../hooks/useAuth';  // Añade esta línea
 import { useAuthFetch } from '../../../hooks/useAuthFetch';  // Añade esta línea
 
 export default function AdminDashboard() {
-    const router = useRouter();
-    const { user, loading } = useAuth();
-    const { fetchWithAuth } = useAuthFetch();
 
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
+    const [users, setUsers] = useState([]);
+    const [services, setServices] = useState([]);
+    const [editingService, setEditingService] = useState(null);
+    const [selectedRole, setSelectedRole] = useState('');
+    const [appointments, setAppointments] = useState([]);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [error, setError] = useState('');
     const [confirmationModal, setConfirmationModal] = useState({
         isOpen: false,
         title: '',
         message: '',
         onConfirm: null
     });
+
+
+
     const [mounted, setMounted] = useState(false);
-    const [services, setServices] = useState([]);
-    const [users, setUsers] = useState([]);
+
+
     const [newService, setNewService] = useState({
         nombre: '',
         descripcion: '',
@@ -29,10 +40,11 @@ export default function AdminDashboard() {
         duracion: '',
         estado: true
     });
-    const [editingService, setEditingService] = useState(null);
-    const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [editingUser, setEditingUser] = useState(null);
+
+    const { fetchWithAuth } = useAuthFetch();
+
 
     const handleLogout = () => {
         localStorage.removeItem('user');
@@ -55,8 +67,6 @@ export default function AdminDashboard() {
         }
     }, [user, loading, router]);
 
-    if (loading) return <div>Cargando...</div>;
-    if (!user || user.rol !== 'Admin') return null;
 
     // Efecto para cargar datos (combinado con autenticación)
     useEffect(() => {
@@ -97,13 +107,9 @@ export default function AdminDashboard() {
         }
     }, [user, loading, router]);
 
-    if (loading || !mounted) {
-        return <div>Cargando...</div>;
-    }
+    if (loading) return <div>Cargando...</div>;
+    if (!user || user.rol !== 'Admin') return null;
 
-    if (!user || user.rol !== 'Admin') {
-        return null;
-    }
 
     // Función para mostrar el modal de confirmación
     const showConfirmation = (title, message, onConfirm) => {
@@ -244,9 +250,16 @@ export default function AdminDashboard() {
             })
     };
 
+
+
+
     if (!mounted || !user) {
         return null;
     }
+
+    // Renderizado
+    if (loading) return <div>Cargando...</div>;
+    if (!user || user.rol !== 'Admin') return null;
 
     return (
         <div className="min-h-screen bg-gray-100 p-8">
@@ -622,6 +635,12 @@ function AppointmentManager() {
 
     const fetchAppointments = async () => {
         try {
+            // Añadir logs para debug
+            console.log('Intentando obtener citas...');
+            const headers = getAuthHeaders();
+            console.log('Headers:', headers);
+
+
             const response = await fetch("http://localhost:5000/api/v1/appointments", {
                 headers: getAuthHeaders()
             });
