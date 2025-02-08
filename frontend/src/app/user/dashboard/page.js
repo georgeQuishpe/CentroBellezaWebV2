@@ -54,7 +54,7 @@ export default function UserDashboard() {
 
                 setUser(parsedUser);
 
-                const response = await fetch("http://localhost:5000/api/v1/services/");
+                const response = await fetch("http://localhost:5002/api/v1/services/");
                 const servicesData = await response.json();
                 setServices(servicesData);
             } catch (error) {
@@ -90,7 +90,7 @@ export default function UserDashboard() {
                 throw new Error('No hay sesión activa');
             }
 
-            const response = await fetch(`http://localhost:5000/api/v1/appointments/available/${date}`);
+            const response = await fetch(`http://localhost:5003/api/v1/appointments/available/${date}`);
             if (!response.ok) {
                 throw new Error("Error al obtener horas disponibles");
             }
@@ -127,7 +127,7 @@ export default function UserDashboard() {
                 throw new Error('No hay sesión activa');
             }
 
-            const response = await fetch("http://localhost:5000/api/v1/appointments/", {
+            const response = await fetch("http://localhost:5003/api/v1/appointments/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

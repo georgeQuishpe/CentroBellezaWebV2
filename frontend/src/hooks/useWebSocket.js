@@ -300,7 +300,7 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
         try {
             console.log("Cargando mensajes para usuario:", chatUserId);
             const response = await fetch(
-                `http://localhost:5000/api/v1/chat-messages/${chatUserId}`
+                `http://localhost:5004/api/v1/chat-messages/${chatUserId}`
             );
 
             if (!response.ok) {
@@ -325,7 +325,7 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
         setSelectedUserId(newSelectedUserId);
         if (isAdmin && newSelectedUserId) {
             try {
-                const response = await fetch(`http://localhost:5000/api/v1/chat-messages/${newSelectedUserId}`);
+                const response = await fetch(`http://localhost:5004/api/v1/chat-messages/${newSelectedUserId}`);
                 const messages = await response.json();
                 setMessages(messages);
             } catch (error) {

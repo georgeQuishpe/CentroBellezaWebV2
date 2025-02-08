@@ -38,7 +38,7 @@ export const useAuth = () => {
     const refreshToken = async () => {
         try {
             const currentRefreshToken = localStorage.getItem('refreshToken');
-            const response = await fetch('http://localhost:5000/api/v1/auth/refresh-token', {
+            const response = await fetch('http://localhost:5001/api/v1/auth/refresh-token', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

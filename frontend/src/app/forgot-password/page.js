@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
         setLoading(true)
 
         try {
-            const response = await fetch('http://localhost:5000/api/v1/auth/recover-password', {
+            const response = await fetch('http://localhost:5001/api/v1/auth/recover-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
