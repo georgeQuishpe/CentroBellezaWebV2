@@ -64,9 +64,40 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
             // }
             
 
+            const refreshToken = async () => {
+                try {
+                    const response = await fetch('http://localhost:5001/api/v1/auth/refresh-token', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            refreshToken: localStorage.getItem('refreshToken')
+                        })
+                    });
+    
+                    if (response.ok) {
+                        const data = await response.json();
+                        localStorage.setItem('token', data.token);
+                        return data.token;
+                    }
+                    throw new Error('No se pudo renovar el token');
+                } catch (error) {
+                    console.error('Error renovando token:', error);
+                    return null;
+                }
+            };
+
 
         const connectSocket = async () => {
             try {
+
+
+                if (!token) {
+                    setError('No se encontró token de autenticación');
+                    return;
+                }
+
 
                 if (socketRef.current) {
                     socketRef.current.disconnect();
@@ -75,7 +106,18 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
 
                 // Verificar si el token está expirado
                 const decoded = jwtDecode(token); // Usar la función importada
+                const currentTime = Date.now() / 1000;
                 console.log('Token decodificado:', decoded);
+
+
+                // Si el token está próximo a expirar o ya expiró, intentar renovarlo
+                if (decoded.exp - currentTime < 300) { // 5 minutos antes de expirar
+                    const newToken = await refreshToken();
+                    if (!newToken) {
+                        setError('Sesión expirada. Por favor, vuelva a iniciar sesión.');
+                        return;
+                    }
+                }
 
 
                 console.log('Token info:', {
@@ -182,6 +224,19 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
 
         connectSocket();
 
+        
+        // Configurar un intervalo para verificar y renovar el token
+        const tokenCheckInterval = setInterval(async () => {
+            const currentToken = localStorage.getItem('token');
+            if (currentToken) {
+                const decoded = jwtDecode(currentToken);
+                const currentTime = Date.now() / 1000;
+                
+                if (decoded.exp - currentTime < 300) {
+                    await refreshToken();
+                }
+            }
+        }, 240000); // Verificar cada 4 minutos
 
         return () => {
             if (socketRef.current) {
