@@ -3,7 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-const routerApi = require('./routes');
+const router = express.Router();
+const chatMessagesRouter = require('./routes/chatMessages.routes');
+const exp = require('constants');
 
 const app = express();
 const httpServer = createServer(app);
@@ -14,7 +16,7 @@ const ALLOWED_ORIGINS = [
   "http://localhost:5000",
   "http://ms-auth:5000",
   "http://ms-services:5000",
-  "http://ms-appointments:5000", 
+  "http://ms-appointments:5000",
   "http://ms-messages:5000",
 
 ];
@@ -57,7 +59,7 @@ app.use(express.json());
 // Manejo de eventos de Socket.IO
 io.on('connection', (socket) => {
   console.log('Cliente conectado:', socket.id);
-  
+
   socket.on('disconnect', () => {
     console.log('Cliente desconectado:', socket.id);
   });
@@ -95,7 +97,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-routerApi(app);
+app.use('/api/v1', router);
+router.use('/chat-messages', chatMessagesRouter);
 
 const port = process.env.PORT_MESSAGES || 5004;
 const host = '0.0.0.0';

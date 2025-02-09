@@ -1,7 +1,8 @@
 // ms-appointments
 const express = require('express');
 const cors = require('cors');
-const routerApi = require('./routes');
+const router = express.Router();
+const appointmentsRouter = require('./routes/appointments.routes');
 
 const app = express();
 
@@ -44,7 +45,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-routerApi(app);
+app.use('/api/v1', router);
+router.use('/appointments', appointmentsRouter);
 
 const port = process.env.PORT_APPOINTMENT || 5003;
 // Inicio del servidor con manejo de errores
