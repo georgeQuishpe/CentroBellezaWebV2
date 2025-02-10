@@ -159,20 +159,32 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
                     //     // autoConnect: true
                     // });
 
+                    // socketRef.current = io(SOCKET_SERVER_URL, {
+                    //     path: '/ms-messages/socket.io',
+                    //     query: {
+                    //         userId: isAdmin ? `admin_${decoded.sub}` : decoded.sub,
+                    //         isAdmin: isAdmin.toString()
+                    //     },
+                    //     auth: { token },
+                    //     transports: ['websocket', 'polling'],
+                    //     reconnection: true,
+                    //     reconnectionAttempts: 5,
+                    //     reconnectionDelay: 1000,
+                    //     reconnectionDelayMax: 5000,
+                    //     timeout: 10000,
+                    //     forceNew: true
+                    // });
+
+
                     socketRef.current = io(SOCKET_SERVER_URL, {
                         path: '/ms-messages/socket.io',
                         query: {
-                            userId: isAdmin ? `admin_${decoded.sub}` : decoded.sub,
-                            isAdmin: isAdmin.toString()
+                            userId: `admin_${decoded.sub}`,
+                            isAdmin: 'true' // Asegurarse de que sea string
                         },
                         auth: { token },
                         transports: ['websocket', 'polling'],
-                        reconnection: true,
-                        reconnectionAttempts: 5,
-                        reconnectionDelay: 1000,
-                        reconnectionDelayMax: 5000,
-                        timeout: 10000,
-                        forceNew: true
+                        reconnection: true
                     });
 
                     // Listeners del socket

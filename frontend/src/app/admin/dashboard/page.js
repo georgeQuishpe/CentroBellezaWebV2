@@ -526,8 +526,8 @@ export default function AdminDashboard() {
 
                     {/* Chat en la tercera columna */}
                     <div className="col-span-1">
-                        <ChatProvider userId={`admin_${user?.id}`} isAdmin={true}>
-                            <AdminChat />
+                        <ChatProvider>
+                            <AdminChat isAdmin={true} userId={`admin_${user?.id}`} />
                         </ChatProvider>
                     </div>
                 </div>
