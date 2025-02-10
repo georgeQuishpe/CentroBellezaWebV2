@@ -13,6 +13,7 @@ module.exports = (io) => {
     io.on('connection', async (socket) => {
         const userId = socket.handshake.query.userId;
         const isAdmin = socket.handshake.query.isAdmin === 'true';
+        console.log('Conectando usuario:', { userId, isAdmin }); // Para debug
 
         console.log(`Nueva conexión - Usuario ID: ${userId}, Admin: ${isAdmin}`);
 
@@ -101,6 +102,8 @@ module.exports = (io) => {
                     Array.from(adminSockets).forEach(adminSocketId => {
                         io.to(adminSocketId).emit('message', newMessage);
                     });
+                    console.log('Mensaje enviado a todos los admins conectados');
+
                 } else {
                     // Emitir mensaje al destinatario específico
                     const recipientSocket = connectedUsers.get(messageData.toUserId);

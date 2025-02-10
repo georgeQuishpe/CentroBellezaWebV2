@@ -142,21 +142,37 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
                 if (userId) {
 
                     // Inicializar el socket
+                    // socketRef.current = io(SOCKET_SERVER_URL, {
+                    //     path: '/ms-messages/socket.io',
+                    //     // query: { userId, isAdmin },
+                    //     query: {
+                    //         userId: decoded.sub, // Usar el ID del token
+                    //         isAdmin
+                    //     },
+                    //     auth: token ? { token } : undefined,
+                    //     transports: ['websocket', 'polling'],
+                    //     reconnection: true,
+                    //     reconnectionAttempts: 5,
+                    //     reconnectionDelay: 1000,
+                    //     timeout: 10000
+                    //     // forceNew: true,
+                    //     // autoConnect: true
+                    // });
+
                     socketRef.current = io(SOCKET_SERVER_URL, {
                         path: '/ms-messages/socket.io',
-                        // query: { userId, isAdmin },
                         query: {
-                            userId: decoded.sub, // Usar el ID del token
-                            isAdmin
+                            userId: isAdmin ? `admin_${decoded.sub}` : decoded.sub,
+                            isAdmin: isAdmin.toString()
                         },
-                        auth: token ? { token } : undefined,
+                        auth: { token },
                         transports: ['websocket', 'polling'],
                         reconnection: true,
                         reconnectionAttempts: 5,
                         reconnectionDelay: 1000,
-                        timeout: 10000
-                        // forceNew: true,
-                        // autoConnect: true
+                        reconnectionDelayMax: 5000,
+                        timeout: 10000,
+                        forceNew: true
                     });
 
                     // Listeners del socket
