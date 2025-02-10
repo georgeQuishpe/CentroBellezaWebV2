@@ -114,6 +114,10 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
 
                 // Verificar si el token está expirado
                 const decoded = jwtDecode(token); // Usar la función importada
+
+                const isActuallyAdmin = decoded.rol === 'Admin';
+
+
                 const currentTime = Date.now() / 1000;
                 console.log('Token decodificado:', decoded);
 
@@ -176,15 +180,24 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
                     // });
 
 
+                    // socketRef.current = io(SOCKET_SERVER_URL, {
+                    //     path: '/ms-messages/socket.io',
+                    //     query: {
+                    //         userId: `admin_${decoded.sub}`,
+                    //         isAdmin: 'true' // Asegurarse de que sea string
+                    //     },
+                    //     auth: { token },
+                    //     transports: ['websocket', 'polling'],
+                    //     reconnection: true
+                    // });
+
                     socketRef.current = io(SOCKET_SERVER_URL, {
                         path: '/ms-messages/socket.io',
                         query: {
-                            userId: `admin_${decoded.sub}`,
-                            isAdmin: 'true' // Asegurarse de que sea string
+                            userId: isActuallyAdmin ? `admin_${decoded.sub}` : decoded.sub,
+                            isAdmin: isActuallyAdmin.toString()
                         },
-                        auth: { token },
-                        transports: ['websocket', 'polling'],
-                        reconnection: true
+                        auth: { token }
                     });
 
                     // Listeners del socket

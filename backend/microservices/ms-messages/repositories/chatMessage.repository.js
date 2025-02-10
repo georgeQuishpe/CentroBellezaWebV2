@@ -43,21 +43,37 @@ class ChatMessageRepository {
         //     timestamp: msg.fechaenvio
         // }));
 
-        const messages = await models.sequelize.query(`
-            SELECT DISTINCT ON (u.id) 
-                u.id as usuarioid,
-                u.nombre,
+        // const messages = await models.sequelize.query(`
+        //     SELECT DISTINCT ON (u.id) 
+        //         u.id as usuarioid,
+        //         u.nombre,
+        //         cm.mensaje,
+        //         cm.fechaenvio
+        //     FROM usuarios u
+        //     LEFT JOIN chatmensajes cm ON u.id = cm.usuarioid
+        //     WHERE u.rol = 'Cliente'
+        //     ORDER BY u.id, cm.fechaenvio DESC NULLS LAST
+        // `, { type: models.sequelize.QueryTypes.SELECT });
+
+        // return messages.map(msg => ({
+        //     userId: msg.usuarioid,
+        //     nombre: msg.nombre || `Usuario ${msg.usuarioid}`,
+        //     lastMessage: msg.mensaje || 'No hay mensajes',
+        //     timestamp: msg.fechaenvio
+        // }));
+
+
+        const result = await models.ChatMessage.sequelize.query(`
+            SELECT DISTINCT ON (cm.usuarioid) 
+                cm.usuarioid,
                 cm.mensaje,
                 cm.fechaenvio
-            FROM usuarios u
-            LEFT JOIN chatmensajes cm ON u.id = cm.usuarioid
-            WHERE u.rol = 'Cliente'
-            ORDER BY u.id, cm.fechaenvio DESC NULLS LAST
-        `, { type: models.sequelize.QueryTypes.SELECT });
+            FROM chatmensajes cm
+            ORDER BY cm.usuarioid, cm.fechaenvio DESC
+        `, { type: models.ChatMessage.sequelize.QueryTypes.SELECT });
 
-        return messages.map(msg => ({
+        return result.map(msg => ({
             userId: msg.usuarioid,
-            nombre: msg.nombre || `Usuario ${msg.usuarioid}`,
             lastMessage: msg.mensaje || 'No hay mensajes',
             timestamp: msg.fechaenvio
         }));

@@ -12,7 +12,9 @@ module.exports = (io) => {
 
     io.on('connection', async (socket) => {
         const userId = socket.handshake.query.userId;
-        const isAdmin = socket.handshake.query.isAdmin === 'true';
+        // const isAdmin = socket.handshake.query.isAdmin === 'true';
+        const isAdmin = socket.handshake.query.isAdmin === 'true' &&
+            socket.user?.rol === 'Admin';
         console.log('Conectando usuario:', { userId, isAdmin }); // Para debug
 
         console.log(`Nueva conexión - Usuario ID: ${userId}, Admin: ${isAdmin}`);
