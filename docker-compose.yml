@@ -95,6 +95,9 @@ services:
     depends_on:
       db-appointments:
         condition: service_healthy
+        # Lo puse ahorita
+      db-messages:
+        condition: service_healthy
     environment:
       DB_HOST: db-appointments
       DB_USER: postgres

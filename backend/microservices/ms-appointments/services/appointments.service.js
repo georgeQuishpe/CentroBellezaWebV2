@@ -1,6 +1,8 @@
 const AppointmentsRepository = require('../repositories/appointments.repository');
 const { models } = require('../libs/sequelize');
 const axios = require('axios');
+const SERVICES_URL = process.env.SERVICES_URL || 'http://ms-services:5002';
+
 
 
 class AppointmentsService {
@@ -66,69 +68,107 @@ class AppointmentsService {
         try {
             const appointments = await AppointmentsRepository.findByUser(userId);
 
+            // try {
+
+            //     // Obtener datos de servicios
+            //     // Obtener datos de servicios con retry y timeout
+            //     // const servicesData = await axios.get(`http://ms-services:5002/api/v1/services`...);
+
+            //     console.log('Intentando conectar a ms-services...');
+            //     const servicesUrl = 'http://ms-services:5002/api/v1/services';
+            //     console.log('URL del servicio:', servicesUrl);
+
+            //     // const servicesData = await axios.get(`http://ms-services:5002/api/v1/services`, {
+            //     //     timeout: 5000,
+            //     //     retry: 3,
+            //     //     retryDelay: 1000
+            //     // });
+
+            //     const servicesData = await axios.get(servicesUrl, {
+            //         timeout: 5000,
+            //         headers: {
+            //             'Accept': 'application/json'
+            //         }
+            //     });
+
+            //     console.log('Respuesta recibida de ms-services');
+
+            //     const services = servicesData.data;
+
+            //     // Obtener datos de usuario
+            //     // Obtener datos de usuario
+            //     const userData = await axios.get(`http://ms-auth:5001/api/v1/users/${userId}`, {
+            //         timeout: 5000
+            //     });
+            //     const user = userData.data;
+
+            //     // Mapear y combinar la información
+            //     return appointments.map(appointment => {
+            //         const service = services.find(s => s.id === appointment.servicioId);
+            //         return {
+            //             // ...appointment.toJSON(),
+            //             // servicio: service || null,
+            //             // usuario: user || null
+            //             ...appointment.toJSON(),
+            //             servicio: service || {
+            //                 nombre: "Servicio no disponible",
+            //                 precio: 0,
+            //                 duracion: 0
+            //             },
+            //             usuario: user || null
+            //         };
+            //     });
+            // } catch (serviceError) {
+            //     console.error("Error al obtener datos externos:", serviceError);
+            //     // Retornar las citas con información mínima en caso de error
+            //     return appointments.map(appointment => ({
+            //         ...appointment.toJSON(),
+            //         servicio: {
+            //             nombre: "Servicio no disponible",
+            //             precio: 0,
+            //             duracion: 0
+            //         },
+            //         usuario: null
+            //     }));
+            // }
+
+            // Simplemente devolver las citas sin intentar obtener información adicional
+            // return appointments.map(appointment => ({
+            //     ...appointment.toJSON(),
+            //     servicio: {
+            //         nombre: `Servicio ${appointment.servicioId}`,
+            //         precio: null,
+            //         duracion: null
+            //     }
+            // }));
+
+
+            let services = [];
             try {
-
-                // Obtener datos de servicios
-                // Obtener datos de servicios con retry y timeout
-                // const servicesData = await axios.get(`http://ms-services:5002/api/v1/services`...);
-
-                console.log('Intentando conectar a ms-services...');
-                const servicesUrl = 'http://ms-services:5002/api/v1/services';
-                console.log('URL del servicio:', servicesUrl);
-
-                // const servicesData = await axios.get(`http://ms-services:5002/api/v1/services`, {
-                //     timeout: 5000,
-                //     retry: 3,
-                //     retryDelay: 1000
-                // });
-
-                const servicesData = await axios.get(servicesUrl, {
+                const response = await axios.get(`${SERVICES_URL}/api/v1/services`, {
                     timeout: 5000,
+                    retries: 3,
                     headers: {
                         'Accept': 'application/json'
                     }
                 });
-
-                console.log('Respuesta recibida de ms-services');
-
-                const services = servicesData.data;
-
-                // Obtener datos de usuario
-                // Obtener datos de usuario
-                const userData = await axios.get(`http://ms-auth:5001/api/v1/users/${userId}`, {
-                    timeout: 5000
-                });
-                const user = userData.data;
-
-                // Mapear y combinar la información
-                return appointments.map(appointment => {
-                    const service = services.find(s => s.id === appointment.servicioId);
-                    return {
-                        // ...appointment.toJSON(),
-                        // servicio: service || null,
-                        // usuario: user || null
-                        ...appointment.toJSON(),
-                        servicio: service || {
-                            nombre: "Servicio no disponible",
-                            precio: 0,
-                            duracion: 0
-                        },
-                        usuario: user || null
-                    };
-                });
+                services = response.data;
             } catch (serviceError) {
-                console.error("Error al obtener datos externos:", serviceError);
-                // Retornar las citas con información mínima en caso de error
-                return appointments.map(appointment => ({
-                    ...appointment.toJSON(),
-                    servicio: {
-                        nombre: "Servicio no disponible",
-                        precio: 0,
-                        duracion: 0
-                    },
-                    usuario: null
-                }));
+                console.error('Error al obtener servicios:', serviceError);
             }
+
+            // Mapear citas con servicios
+            return appointments.map(appointment => {
+                const service = services.find(s => s.id === appointment.servicioId);
+                return {
+                    ...appointment.toJSON(),
+                    servicio: service || {
+                        nombre: `Servicio ${appointment.servicioId}`,
+                        precio: null,
+                        duracion: null
+                    }
+                };
+            });
         } catch (error) {
             console.error('Error detallado:', {
                 code: error.code,
