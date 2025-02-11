@@ -6,39 +6,45 @@ import "moment/locale/es";
 
 moment.locale("es");
 
-export function MessageList({ messages }) {
+export function MessageList() {
   // Usar los mensajes que vienen como prop
-  // const { messages, selectedUserId, isAdmin, userId } = useChat();
-  const { userId } = useChat(); // Solo necesitamos userId del contexto
+  const { messages, selectedUserId, isAdmin, userId } = useChat();
+  // const { userId } = useChat(); // Solo necesitamos userId del contexto
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // const filteredMessages =
-  //   isAdmin && selectedUserId
-  //     ? messages.filter(
-  //         (msg) =>
-  //           msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
-  //       )
-  //     : messages;
+  if (!messages) return null; // O un mensaje de carga
 
-  // const isOwnMessage = (message) => {
-  //   if (isAdmin) {
-  //     return message.usuarioId.includes("admin");
-  //   }
-  //   return (
-  //     message.usuarioId !== "admin" && !message.usuarioId.includes("admin")
-  //   );
-  // };
+  const filteredMessages =
+    isAdmin && selectedUserId
+      ? messages.filter(
+          (msg) =>
+            msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+        )
+      : messages;
 
-  // const isUserMessage = (message) => {
-  //   if (isAdmin) {
-  //     return message.usuarioId === selectedUserId;
-  //   }
-  //   return message.usuarioId === userId;
-  // };
+  const isOwnMessage = (message) => {
+    if (isAdmin) {
+      return message.usuarioId.includes("admin");
+    }
+    return (
+      message.usuarioId !== "admin" && !message.usuarioId.includes("admin")
+    );
+  };
+
+  const isUserMessage = (message) => {
+    if (isAdmin) {
+      return message.usuarioId === selectedUserId;
+    }
+    return message.usuarioId === userId;
+  };
+
+  console.log("Messages:", messages);
+  console.log("Selected User:", selectedUserId);
+  console.log("Filtered Messages:", filteredMessages);
 
   return (
     // <div className="flex-1 overflow-y-auto p-4 space-y-4">

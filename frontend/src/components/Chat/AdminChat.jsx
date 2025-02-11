@@ -98,6 +98,11 @@ export function AdminChat() {
           msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
       )
     : [];
+  // const filteredMessages =
+  //   messages?.filter(
+  //     (msg) =>
+  //       msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+  //   ) || [];
 
   console.log("Active Chats:", activeChats);
   console.log("Selected User:", selectedUserId);
