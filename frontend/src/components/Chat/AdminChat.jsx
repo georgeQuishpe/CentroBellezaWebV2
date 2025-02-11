@@ -112,11 +112,24 @@ export function AdminChat() {
   }, [messages, userId]);
 
   // Filter chats and messages
+  // const filteredChats = activeChats?.filter(
+  //   (chat) =>
+  //     chat.userId.toLowerCase().includes(searchTerm.toLowerCase()) &&
+  //     //No estaba
+  //     !chat.userId.includes("admin_")
+  // );
+
+  // const filteredChats = activeChats?.filter(
+  //   (chat) =>
+  //     chat.userId.toLowerCase().includes(searchTerm.toLowerCase()) &&
+  //     !chat.userId.includes("admin")
+  // );
+
   const filteredChats = activeChats?.filter(
     (chat) =>
-      chat.userId.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      //No estaba
-      !chat.userId.includes("admin_")
+      !chat.userId.includes("admin") &&
+      !chat.userId.includes("1756088099") &&
+      chat.userId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // const filteredMessages = Array.isArray(messages)

@@ -529,7 +529,10 @@ export default function AdminDashboard() {
                         {/* <ChatProvider>
                             <AdminChat isAdmin={true} userId={`admin_${user?.id}`} />
                         </ChatProvider> */}
-                        <ChatProvider userId={`admin_${user?.id}`} isAdmin={true}>
+                        {/* <ChatProvider userId={`admin_${user?.id}`} isAdmin={true}>
+                            <AdminChat />
+                        </ChatProvider> */}
+                        <ChatProvider userId={user.id} isAdmin={true}>
                             <AdminChat />
                         </ChatProvider>
                     </div>

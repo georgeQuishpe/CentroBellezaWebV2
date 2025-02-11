@@ -11,7 +11,12 @@ export function ChatProvider({
   userId: initialUserId,
   isAdmin = false,
 }) {
-  const [userId, setUserId] = useState(null);
+  // const [userId, setUserId] = useState(null);
+
+  const [userId, setUserId] = useState(
+    isAdmin ? `admin_${initialUserId}` : initialUserId
+  );
+
   const [loading, setLoading] = useState(true);
 
   // Move useWebSocket hook to top level

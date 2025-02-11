@@ -23,13 +23,26 @@ export function MessageList() {
 
   if (!messages?.length) return null;
 
+  // const filteredMessages =
+  //   isAdmin && selectedUserId
+  //     ? messages.filter(
+  //         (msg) =>
+  //           msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+  //       )
+  //     : messages;
+
   const filteredMessages =
     isAdmin && selectedUserId
       ? messages.filter(
           (msg) =>
-            msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+            msg.usuarioId === selectedUserId ||
+            msg.toUserId === selectedUserId ||
+            (msg.usuarioId.includes("admin_") &&
+              msg.toUserId === selectedUserId)
         )
-      : messages;
+      : messages.filter(
+          (msg) => msg.usuarioId === userId || msg.toUserId === userId
+        );
 
   // const isOwnMessage = (message) => {
   //   if (isAdmin) {

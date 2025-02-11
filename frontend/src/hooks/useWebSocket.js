@@ -354,25 +354,41 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
     //     socketRef.current.emit('sendMessage', messageData);
     // };
 
-    const sendMessage = (content, toUserId = 'admin') => {
-        console.log('Enviando mensaje:', { content, userId, toUserId });
+    // const sendMessage = (content, toUserId = 'admin') => {
+    //     console.log('Enviando mensaje:', { content, userId, toUserId });
 
-        if (!socketRef.current?.connected) {
-            console.error('No hay conexión con el servidor');
-            return;
+    //     if (!socketRef.current?.connected) {
+    //         console.error('No hay conexión con el servidor');
+    //         return;
+    //     }
+
+    //     const token = localStorage.getItem('token');
+    //     const decoded = jwtDecode(token);
+
+    //     const messageData = {
+    //         content,
+    //         userId: userId,
+    //         toUserId
+    //     };
+
+    //     socketRef.current.emit('sendMessage', messageData); // Cambiado de 'message' a 'sendMessage'
+
+    // };
+
+    const sendMessage = async (content) => {
+        if (!socketRef.current) return;
+
+        try {
+            const messageData = {
+                userId: isAdmin ? `admin_${userId}` : userId,
+                toUserId: isAdmin ? selectedUserId : 'admin',
+                content
+            };
+
+            socketRef.current.emit('sendMessage', messageData);
+        } catch (error) {
+            console.error('Error sending message:', error);
         }
-
-        const token = localStorage.getItem('token');
-        const decoded = jwtDecode(token);
-
-        const messageData = {
-            content,
-            userId: userId,
-            toUserId
-        };
-
-        socketRef.current.emit('sendMessage', messageData); // Cambiado de 'message' a 'sendMessage'
-
     };
 
 
