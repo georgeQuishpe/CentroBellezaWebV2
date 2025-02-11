@@ -18,7 +18,7 @@ export function AdminChat() {
   const [searchTerm, setSearchTerm] = useState("");
   const [unreadCounts, setUnreadCounts] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState([]); 
+  const [messages, setMessages] = useState([]);
 
   // Fetch messages for a selected chat
   const fetchChatMessages = useCallback(async (chatUserId) => {
@@ -37,7 +37,7 @@ export function AdminChat() {
       setMessages(Array.isArray(chatMessages) ? chatMessages : []);
     } catch (error) {
       console.error("Error al cargar mensajes:", error);
-      setMessages([]); 
+      setMessages([]);
     } finally {
       setIsLoading(false);
     }
@@ -56,26 +56,22 @@ export function AdminChat() {
       const handleNewMessage = (message) => {
         // Only add message if it's related to the current selected chat
         if (
-          message.usuarioId === selectedUserId || 
+          message.usuarioId === selectedUserId ||
           message.toUserId === selectedUserId
         ) {
           setMessages((prevMessages) => {
             // Prevent duplicate messages
-            const isDuplicate = prevMessages.some(
-              (m) => m.id === message.id
-            );
-            return isDuplicate 
-              ? prevMessages 
-              : [...prevMessages, message];
+            const isDuplicate = prevMessages.some((m) => m.id === message.id);
+            return isDuplicate ? prevMessages : [...prevMessages, message];
           });
         }
       };
 
-      socket.on('new-message', handleNewMessage);
+      socket.on("new-message", handleNewMessage);
 
       // Cleanup socket listener
       return () => {
-        socket.off('new-message', handleNewMessage);
+        socket.off("new-message", handleNewMessage);
       };
     }
   }, [socket, selectedUserId]);
@@ -117,7 +113,7 @@ export function AdminChat() {
           />
         </div>
         <div className="overflow-y-auto h-[calc(100%-4rem)]">
-          {filteredChats?.map((chat) => (
+          {/* {filteredChats?.map((chat) => (
             <div
               key={chat.userId}
               onClick={() => handleChatSelect(chat.userId)}
@@ -133,6 +129,19 @@ export function AdminChat() {
                 </span>
               )}
             </div>
+          ))} */}
+
+          {filteredChats?.map((chat) => (
+            <div
+              key={chat.userId}
+              onClick={() => handleChatSelect(chat.userId)}
+              className={`p-4 font-medium text-black cursor-pointer hover:bg-gray-100 relative ${
+                selectedUserId === chat.userId ? "bg-blue-50" : ""
+              }`}
+            >
+              <div className="font-bold">Usuario: {chat.userId}</div>
+              <div className="text-sm text-gray-500">{chat.lastMessage}</div>
+            </div>
           ))}
         </div>
       </div>
@@ -142,7 +151,9 @@ export function AdminChat() {
         {selectedUserId ? (
           <>
             <div className="p-4 border-b bg-white">
-              <div className="text-blue-500 font-bold">Chat con {selectedUserId}</div>
+              <div className="text-blue-500 font-bold">
+                Chat con {selectedUserId}
+              </div>
               <div className="text-sm text-black">
                 {connected ? "En línea" : "Desconectado"}
               </div>

@@ -63,19 +63,37 @@ class ChatMessageRepository {
         // }));
 
 
+        // const result = await models.ChatMessage.sequelize.query(`
+        //     SELECT DISTINCT ON (cm.usuarioid) 
+        //         cm.usuarioid,
+        //         cm.mensaje,
+        //         cm.fechaenvio
+        //     FROM chatmensajes cm
+        //     ORDER BY cm.usuarioid, cm.fechaenvio DESC
+        // `, { type: models.ChatMessage.sequelize.QueryTypes.SELECT });
+
+        // return result.map(msg => ({
+        //     userId: msg.usuarioid,
+        //     lastMessage: msg.mensaje || 'No hay mensajes',
+        //     timestamp: msg.fechaenvio
+        // }));
+
         const result = await models.ChatMessage.sequelize.query(`
             SELECT DISTINCT ON (cm.usuarioid) 
-                cm.usuarioid,
-                cm.mensaje,
-                cm.fechaenvio
+                cm.usuarioid as "userId",
+                cm.mensaje as "lastMessage",
+                cm.fechaenvio as "timestamp"
             FROM chatmensajes cm
+            WHERE cm.touserid = 'admin'
             ORDER BY cm.usuarioid, cm.fechaenvio DESC
-        `, { type: models.ChatMessage.sequelize.QueryTypes.SELECT });
+        `, {
+            type: models.ChatMessage.sequelize.QueryTypes.SELECT
+        });
 
-        return result.map(msg => ({
-            userId: msg.usuarioid,
-            lastMessage: msg.mensaje || 'No hay mensajes',
-            timestamp: msg.fechaenvio
+        return result.map(chat => ({
+            userId: chat.userId,
+            lastMessage: chat.lastMessage || 'No hay mensajes',
+            timestamp: chat.timestamp
         }));
     }
 }
