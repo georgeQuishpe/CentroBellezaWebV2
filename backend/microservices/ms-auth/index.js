@@ -11,7 +11,7 @@ const ALLOWED_ORIGINS = [
   "http://localhost:5000",
   "http://ms-auth:5000",
   "http://ms-services:5000",
-  "http://ms-appointments:5000", 
+  "http://ms-appointments:5000",
   "http://ms-messages:5000",
 
 ];

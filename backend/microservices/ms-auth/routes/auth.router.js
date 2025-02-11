@@ -25,7 +25,15 @@ router.post('/refresh-token', async (req, res) => {
         // Verificar token actual
         // const decoded = jwt.verify(token, config.jwtSecret, { ignoreExpiration: true });
         // Verifica el token con la clave secreta
-        const decoded = jwt.verify(token, config.jwtSecret);
+        // const decoded = jwt.verify(token, config.jwtSecret);
+        // Verificar token incluso si está expirado
+        const decoded = jwt.verify(token, config.jwtSecret, { ignoreExpiration: true });
+
+        // Verificar si el token ha expirado hace más de 7 días
+        const tokenAge = Math.floor(Date.now() / 1000) - decoded.iat;
+        if (tokenAge > 7 * 24 * 60 * 60) { // 7 días
+            return res.status(401).json({ message: 'Token too old, please login again' });
+        }
 
         // Buscar usuario
         const user = await service.findUserById(decoded.sub);

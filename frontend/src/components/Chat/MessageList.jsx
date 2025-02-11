@@ -44,21 +44,33 @@ export function MessageList() {
   //         (msg) => msg.usuarioId === userId || msg.toUserId === userId
   //       );
 
+  // const filteredMessages =
+  //   isAdmin && selectedUserId
+  //     ? messages.filter(
+  //         (msg) =>
+  //           msg.usuarioId === selectedUserId ||
+  //           msg.toUserId === selectedUserId ||
+  //           (msg.usuarioId === `admin_${userId}` &&
+  //             msg.toUserId === selectedUserId)
+  //       )
+  //     : messages.filter(
+  //         (msg) =>
+  //           msg.usuarioId === userId ||
+  //           msg.toUserId === userId ||
+  //           msg.usuarioId === "admin" ||
+  //           msg.toUserId === "admin"
+  //       );
+
   const filteredMessages =
     isAdmin && selectedUserId
       ? messages.filter(
           (msg) =>
             msg.usuarioId === selectedUserId ||
             msg.toUserId === selectedUserId ||
-            (msg.usuarioId === `admin_${userId}` &&
-              msg.toUserId === selectedUserId)
+            msg.usuarioId.startsWith("admin_")
         )
       : messages.filter(
-          (msg) =>
-            msg.usuarioId === userId ||
-            msg.toUserId === userId ||
-            msg.usuarioId === "admin" ||
-            msg.toUserId === "admin"
+          (msg) => msg.usuarioId === userId || msg.toUserId === userId
         );
 
   // const isOwnMessage = (message) => {
@@ -77,10 +89,19 @@ export function MessageList() {
   //   return message.usuarioId === userId;
   // };
 
+  // const isOwnMessage = (message) => {
+  //   if (isAdmin) {
+  //     return message.usuarioId === `admin_${userId}`;
+  //   }
+  //   return message.usuarioId === userId;
+  // };
+
   const isOwnMessage = (message) => {
     if (isAdmin) {
-      return message.usuarioId === `admin_${userId}`;
+      // Si es admin, los mensajes propios tienen el prefijo admin_
+      return message.usuarioId.startsWith("admin_");
     }
+    // Si es cliente, los mensajes propios son los que tienen su userId
     return message.usuarioId === userId;
   };
 
@@ -214,8 +235,8 @@ export function MessageList() {
           </div>
         </div>
       ))}
-      {/* <div ref={bottomRef} /> */}
-      <div />
+      <div ref={bottomRef} />
+      {/* <div /> */}
     </div>
   );
 }
