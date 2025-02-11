@@ -61,17 +61,52 @@ export function MessageList() {
   //           msg.toUserId === "admin"
   //       );
 
-  const filteredMessages =
-    isAdmin && selectedUserId
-      ? messages.filter(
-          (msg) =>
-            msg.usuarioId === selectedUserId ||
-            msg.toUserId === selectedUserId ||
-            msg.usuarioId.startsWith("admin_")
-        )
-      : messages.filter(
-          (msg) => msg.usuarioId === userId || msg.toUserId === userId
-        );
+  // const filteredMessages =
+  //   isAdmin && selectedUserId
+  //     ? messages.filter(
+  //         (msg) =>
+  //           msg.usuarioId === selectedUserId ||
+  //           msg.toUserId === selectedUserId ||
+  //           msg.usuarioId.startsWith("admin_")
+  //       )
+  //     : messages.filter(
+  //         (msg) => msg.usuarioId === userId || msg.toUserId === userId
+  //       );
+
+  const filteredMessages = messages.filter((msg) => {
+    console.log("Filtering message:", {
+      msg,
+      selectedUserId,
+      conditions: {
+        userIdMatch: msg.usuarioId === selectedUserId,
+        toUserIdMatch: msg.toUserId === selectedUserId,
+        isAdminMessage: msg.usuarioId.startsWith("admin_"),
+      },
+    });
+
+    if (isAdmin && selectedUserId) {
+      return (
+        msg.usuarioId === selectedUserId ||
+        msg.toUserId === selectedUserId ||
+        msg.usuarioId.startsWith("admin_")
+      );
+    }
+    return msg.usuarioId === userId || msg.toUserId === userId;
+  });
+
+  // const filteredMessages =
+  //   isAdmin && selectedUserId
+  //     ? messages.filter(
+  //         (msg) =>
+  //           // Solo mostrar mensajes entre el admin y el usuario seleccionado
+  //           (msg.usuarioId === selectedUserId &&
+  //             msg.toUserId.startsWith("admin_")) ||
+  //           (msg.usuarioId.startsWith("admin_") &&
+  //             msg.toUserId === selectedUserId)
+  //       )
+  //     : messages.filter(
+  //         (msg) => msg.usuarioId === userId || msg.toUserId === userId
+  //       );
 
   // const isOwnMessage = (message) => {
   //   if (isAdmin) {
@@ -97,6 +132,12 @@ export function MessageList() {
   // };
 
   const isOwnMessage = (message) => {
+    console.log("Checking message:", {
+      message,
+      isAdmin,
+      userId,
+      isStartingWithAdmin: message.usuarioId.startsWith("admin_"),
+    });
     if (isAdmin) {
       // Si es admin, los mensajes propios tienen el prefijo admin_
       return message.usuarioId.startsWith("admin_");
@@ -200,6 +241,10 @@ export function MessageList() {
     // </div>
 
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="text-xs text-gray-500 mb-2">
+        Debug: Admin: {isAdmin ? "true" : "false"}, UserId: {userId},
+        SelectedUserId: {selectedUserId}
+      </div>
       {filteredMessages.map((message, index) => (
         // <div
         //   // Usar una combinación única de id y index como key
@@ -208,19 +253,31 @@ export function MessageList() {
         //     message.usuarioId === userId ? "justify-end" : "justify-start"
         //   }`}
         // >
+        // <div
+        //   key={`${message.id}-${index}`}
+        //   className={`flex ${
+        //     isOwnMessage(message) ? "justify-end" : "justify-start"
+        //   }`}
+        // >
+        //   <div
+        //     className={`max-w-[70%] rounded-lg p-3 ${
+        //       isOwnMessage(message)
+        //         ? "bg-blue-500 text-white"
+        //         : "bg-gray-200 text-black"
+        //     }`}
+        //   >
+        //     <p>{message.mensaje}</p>
+        //     <span className="text-xs opacity-75">
+        //       {moment(message.fechaEnvio).format("LT")}
+        //     </span>
+        //   </div>
+
         <div
           key={`${message.id}-${index}`}
           className={`flex ${
             isOwnMessage(message) ? "justify-end" : "justify-start"
           }`}
         >
-          {/* <div
-            className={`max-w-[70%] rounded-lg p-3 ${
-              message.usuarioId === userId
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-black"
-            }`}
-          > */}
           <div
             className={`max-w-[70%] rounded-lg p-3 ${
               isOwnMessage(message)
@@ -228,11 +285,22 @@ export function MessageList() {
                 : "bg-gray-200 text-black"
             }`}
           >
+            <div className="text-xs mb-1">
+              From: {message.usuarioId}, To: {message.toUserId}
+            </div>
             <p>{message.mensaje}</p>
             <span className="text-xs opacity-75">
               {moment(message.fechaEnvio).format("LT")}
             </span>
           </div>
+
+          {/* <div
+            className={`max-w-[70%] rounded-lg p-3 ${
+              message.usuarioId === userId
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-black"
+            }`}
+          > */}
         </div>
       ))}
       <div ref={bottomRef} />

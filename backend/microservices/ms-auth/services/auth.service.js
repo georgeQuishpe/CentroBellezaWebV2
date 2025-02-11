@@ -15,7 +15,10 @@ class AuthService {
 
     findUserById(id) {
         // return models.User.findByPk(id);
-        return User.findByPk(id); // Use User instead of models.User
+        // return User.findByPk(id); // Use User instead of models.User
+        console.log('Buscando usuario con ID:', id);
+        console.log('UsersService:', this.usersService);
+        return this.usersService.findById(id); // Cambiar findOne por findById
 
     }
 
