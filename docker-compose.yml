@@ -10,11 +10,13 @@ services:
       db-auth:
         condition: service_healthy
     environment:
+      JWT_SECRET: una_clave_secreta_muy_larga_y_segura
       DB_HOST: db-auth
       DB_USER: postgres
       DB_PASSWORD: "ProyectoWenAvanzadasIIB"
       DB_NAME: auth_db
       DB_PORT: 5432
+      
     networks:
       - microservicios-network
     healthcheck:

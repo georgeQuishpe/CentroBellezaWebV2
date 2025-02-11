@@ -79,6 +79,13 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
                     }
                 });
 
+                if (response.status === 401) {
+                    // Si el token es inválido o muy antiguo, redirigir al login
+                    localStorage.removeItem('token');
+                    window.location.href = '/login';
+                    return null;
+                }
+
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || 'Error al renovar el token');

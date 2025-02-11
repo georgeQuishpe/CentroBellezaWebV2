@@ -2,6 +2,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { sendEmail } = require('./mailer.service');
 const UsersService = require('./users.service');
+const { User } = require('../models'); // Add this line
+
 
 
 
@@ -12,7 +14,9 @@ class AuthService {
     }
 
     findUserById(id) {
-        return models.User.findByPk(id);
+        // return models.User.findByPk(id);
+        return User.findByPk(id); // Use User instead of models.User
+
     }
 
 

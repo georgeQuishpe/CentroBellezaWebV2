@@ -2,6 +2,8 @@ const express = require('express');
 const jwt = require('jsonwebtoken'); // Añade esta línea
 const router = express.Router();
 const { config } = require('../config/config'); // Asegúrate de que esta importación existe
+const AuthService = require('../services/auth.service'); // Añade esta línea
+const service = new AuthService(); // Añade esta línea
 
 const { signup, login, recoverPassword, resetPassword } = require('../controllers/auth.controller');
 
