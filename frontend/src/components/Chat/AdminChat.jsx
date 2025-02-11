@@ -112,8 +112,11 @@ export function AdminChat() {
   }, [messages, userId]);
 
   // Filter chats and messages
-  const filteredChats = activeChats?.filter((chat) =>
-    chat.userId.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredChats = activeChats?.filter(
+    (chat) =>
+      chat.userId.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      //No estaba
+      !chat.userId.includes("admin_")
   );
 
   // const filteredMessages = Array.isArray(messages)

@@ -78,12 +78,17 @@ module.exports = (io) => {
                 //     actualToUserId = adminUser.id;
                 // }
 
+                // const newMessage = await service.create({
+                //     usuarioId: messageData.userId,
+                //     mensaje: messageData.content,
+                //     // toUserId: actualToUserId,
+                //     toUserId: 'admin',  // Cliente siempre envía al admin
+                //     fechaEnvio: new Date()
+                // });
                 const newMessage = await service.create({
-                    usuarioId: messageData.userId,
+                    usuarioId: isAdmin ? `admin_${actualUserId}` : messageData.userId,
                     mensaje: messageData.content,
-                    // toUserId: actualToUserId,
-                    toUserId: 'admin',  // Cliente siempre envía al admin
-                    fechaEnvio: new Date()
+                    toUserId: isAdmin ? messageData.toUserId : 'admin'
                 });
                 console.log('Mensaje guardado:', newMessage);
 
@@ -106,23 +111,36 @@ module.exports = (io) => {
                 //     console.log('Mensaje enviado a todos los admins');
                 // }
 
-                if (messageData.toUserId === 'admin') {
+                // if (messageData.toUserId === 'admin') {
+                //     Array.from(adminSockets).forEach(adminSocketId => {
+                //         io.to(adminSocketId).emit('message', newMessage);
+                //     });
+                //     console.log('Mensaje enviado a todos los admins conectados');
+
+                // } else {
+                //     // Emitir mensaje al destinatario específico
+                //     const recipientSocket = connectedUsers.get(messageData.toUserId);
+                //     if (recipientSocket) {
+                //         io.to(recipientSocket).emit('message', newMessage);
+                //     }
+                // }
+                // // Notificar a los admins
+                // Array.from(adminSockets).forEach(adminSocketId => {
+                //     io.to(adminSocketId).emit('message', newMessage);
+                // });
+
+                // Si es admin, enviar al cliente específico
+                if (isAdmin) {
+                    const clientSocket = connectedUsers.get(messageData.toUserId);
+                    if (clientSocket) {
+                        io.to(clientSocket).emit('message', newMessage);
+                    }
+                } else {
+                    // Si es cliente, enviar a todos los admins
                     Array.from(adminSockets).forEach(adminSocketId => {
                         io.to(adminSocketId).emit('message', newMessage);
                     });
-                    console.log('Mensaje enviado a todos los admins conectados');
-
-                } else {
-                    // Emitir mensaje al destinatario específico
-                    const recipientSocket = connectedUsers.get(messageData.toUserId);
-                    if (recipientSocket) {
-                        io.to(recipientSocket).emit('message', newMessage);
-                    }
                 }
-                // Notificar a los admins
-                Array.from(adminSockets).forEach(adminSocketId => {
-                    io.to(adminSocketId).emit('message', newMessage);
-                });
 
             } catch (error) {
                 console.error('Error al enviar mensaje:', error);

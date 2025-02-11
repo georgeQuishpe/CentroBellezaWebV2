@@ -223,9 +223,19 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
                         setMessages(receivedMessages);
                     });
 
+                    // socketRef.current.on('message', (message) => {
+                    //     console.log('Nuevo mensaje:', message);
+                    //     setMessages((prevMessages) => [...prevMessages, message]);
+                    // });
+
                     socketRef.current.on('message', (message) => {
                         console.log('Nuevo mensaje:', message);
-                        setMessages((prevMessages) => [...prevMessages, message]);
+                        setMessages(prevMessages => {
+                            // Verificar si el mensaje ya existe
+                            const messageExists = prevMessages.some(m => m.id === message.id);
+                            if (messageExists) return prevMessages;
+                            return [...prevMessages, message];
+                        });
                     });
 
                     // socketRef.current.on("previousMessages", (previousMessages) => {
@@ -290,6 +300,9 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
                     return () => {
                         if (socketRef.current) {
                             console.log('Desconectando WebSocket...');
+                            socketRef.current.off('message');
+                            socketRef.current.off('previousMessages');
+                            socketRef.current.off('activeChats');
                             socketRef.current.disconnect();
                         }
                     };

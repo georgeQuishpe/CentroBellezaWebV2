@@ -31,13 +31,20 @@ export function MessageList() {
         )
       : messages;
 
+  // const isOwnMessage = (message) => {
+  //   if (isAdmin) {
+  //     return message.usuarioId.includes("admin");
+  //   }
+  //   return (
+  //     message.usuarioId !== "admin" && !message.usuarioId.includes("admin")
+  //   );
+  // };
+
   const isOwnMessage = (message) => {
     if (isAdmin) {
-      return message.usuarioId.includes("admin");
+      return message.usuarioId.includes("admin_");
     }
-    return (
-      message.usuarioId !== "admin" && !message.usuarioId.includes("admin")
-    );
+    return message.usuarioId === userId;
   };
 
   const isUserMessage = (message) => {
@@ -136,16 +143,29 @@ export function MessageList() {
 
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {filteredMessages.map((message, index) => (
+        // <div
+        //   // Usar una combinación única de id y index como key
+        //   key={`${message.id}-${index}`}
+        //   className={`flex ${
+        //     message.usuarioId === userId ? "justify-end" : "justify-start"
+        //   }`}
+        // >
         <div
-          // Usar una combinación única de id y index como key
           key={`${message.id}-${index}`}
           className={`flex ${
-            message.usuarioId === userId ? "justify-end" : "justify-start"
+            isOwnMessage(message) ? "justify-end" : "justify-start"
           }`}
         >
-          <div
+          {/* <div
             className={`max-w-[70%] rounded-lg p-3 ${
               message.usuarioId === userId
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-black"
+            }`}
+          > */}
+          <div
+            className={`max-w-[70%] rounded-lg p-3 ${
+              isOwnMessage(message)
                 ? "bg-blue-500 text-white"
                 : "bg-gray-200 text-black"
             }`}
@@ -157,7 +177,8 @@ export function MessageList() {
           </div>
         </div>
       ))}
-      <div ref={bottomRef} />
+      {/* <div ref={bottomRef} /> */}
+      <div />
     </div>
   );
 }
