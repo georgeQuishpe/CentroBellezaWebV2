@@ -3,16 +3,29 @@ import { useChat } from "../../context/ChatContext";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { useState } from "react";
 
 export function ClientChat() {
-  const { connected, messages, userId, chatOpen, setChatOpen, error } =
-    useChat();
+  const {
+    connected,
+    messages,
+    userId,
+    chatOpen,
+    setChatOpen,
+    error,
+    sendMessage,
+  } = useChat();
   const [message, setMessage] = useState("");
-  const { sendMessage } = useWebSocket(userId, false);
+  // const { sendMessage } = useWebSocket(userId, false);
 
   // Filtra mensajes solo del cliente actual
+  // const clientMessages = messages.filter(
+  //   (msg) => msg.usuarioId === userId || msg.toUserId === userId
+  // );
   const clientMessages = messages.filter(
-    (msg) => msg.usuarioId === userId || msg.toUserId === userId
+    (msg) =>
+      (msg.usuarioId === userId && msg.toUserId === "admin") ||
+      (msg.toUserId === userId && msg.usuarioId.includes("admin"))
   );
 
   const handleSubmit = (e) => {
@@ -139,7 +152,7 @@ export function ClientChat() {
         <MessageInput />
       </div> */}
       <div className="flex-1 h-96 flex flex-col">
-        <MessageList messages={clientMessages} />
+        <MessageList />
         <MessageInput />
       </div>
 

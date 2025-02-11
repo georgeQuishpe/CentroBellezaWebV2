@@ -198,6 +198,12 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
                             isAdmin: isActuallyAdmin.toString()
                         },
                         auth: { token }
+                        // path: '/ms-messages/socket.io',
+                        // query: {
+                        //     userId: decoded.sub,
+                        //     isAdmin: 'false'  // Para cliente siempre es false
+                        // },
+                        // auth: { token }
                     });
 
                     // Listeners del socket

@@ -6,12 +6,15 @@ import "moment/locale/es";
 
 moment.locale("es");
 
-// export function MessageList() {
-export function MessageList({ messages }) {
+export function MessageList() {
+  // export function MessageList({ messages }) {
   // Agregar prop messages
   // Usar los mensajes que vienen como prop
   // const { messages, selectedUserId, isAdmin, userId } = useChat();
-  const { userId, isAdmin, selectedUserId } = useChat(); // Solo obtener userId e isAdmin del contexto
+  // const { userId, isAdmin, selectedUserId } = useChat(); // Solo obtener userId e isAdmin del contexto
+
+  const { messages, selectedUserId, isAdmin, userId } = useChat();
+
   const bottomRef = useRef(null);
 
   useEffect(() => {
@@ -81,10 +84,35 @@ export function MessageList({ messages }) {
     //   <div ref={bottomRef} />
     // </div>
 
+    // <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    //   {messages.map((message, index) => (
+    //     <div
+    //       key={message.id || index}
+    //       className={`flex ${
+    //         message.usuarioId === userId ? "justify-end" : "justify-start"
+    //       }`}
+    //     >
+    //       <div
+    //         className={`max-w-[70%] rounded-lg p-3 ${
+    //           message.usuarioId === userId
+    //             ? "bg-blue-500 text-white"
+    //             : "bg-gray-200 text-black"
+    //         }`}
+    //       >
+    //         <p>{message.mensaje}</p>
+    //         <span className="text-xs opacity-75">
+    //           {new Date(message.fechaEnvio).toLocaleTimeString()}
+    //         </span>
+    //       </div>
+    //     </div>
+    //   ))}
+    //   <div ref={bottomRef} />
+    // </div>
+
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      {messages.map((message, index) => (
+      {filteredMessages.map((message) => (
         <div
-          key={message.id || index}
+          key={message.id}
           className={`flex ${
             message.usuarioId === userId ? "justify-end" : "justify-start"
           }`}
@@ -98,7 +126,7 @@ export function MessageList({ messages }) {
           >
             <p>{message.mensaje}</p>
             <span className="text-xs opacity-75">
-              {new Date(message.fechaEnvio).toLocaleTimeString()}
+              {moment(message.fechaEnvio).format("LT")}
             </span>
           </div>
         </div>

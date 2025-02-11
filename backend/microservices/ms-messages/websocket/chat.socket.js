@@ -81,7 +81,8 @@ module.exports = (io) => {
                 const newMessage = await service.create({
                     usuarioId: messageData.userId,
                     mensaje: messageData.content,
-                    toUserId: actualToUserId,
+                    // toUserId: actualToUserId,
+                    toUserId: 'admin',  // Cliente siempre envía al admin
                     fechaEnvio: new Date()
                 });
                 console.log('Mensaje guardado:', newMessage);
@@ -118,7 +119,10 @@ module.exports = (io) => {
                         io.to(recipientSocket).emit('message', newMessage);
                     }
                 }
-
+                // Notificar a los admins
+                Array.from(adminSockets).forEach(adminSocketId => {
+                    io.to(adminSocketId).emit('message', newMessage);
+                });
 
             } catch (error) {
                 console.error('Error al enviar mensaje:', error);
