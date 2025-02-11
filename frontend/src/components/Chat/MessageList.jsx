@@ -109,10 +109,36 @@ export function MessageList() {
     //   <div ref={bottomRef} />
     // </div>
 
+    // <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    //   {filteredMessages.map((message) => (
+    //     <div
+    //       key={message.id}
+    //       className={`flex ${
+    //         message.usuarioId === userId ? "justify-end" : "justify-start"
+    //       }`}
+    //     >
+    //       <div
+    //         className={`max-w-[70%] rounded-lg p-3 ${
+    //           message.usuarioId === userId
+    //             ? "bg-blue-500 text-white"
+    //             : "bg-gray-200 text-black"
+    //         }`}
+    //       >
+    //         <p>{message.mensaje}</p>
+    //         <span className="text-xs opacity-75">
+    //           {moment(message.fechaEnvio).format("LT")}
+    //         </span>
+    //       </div>
+    //     </div>
+    //   ))}
+    //   <div ref={bottomRef} />
+    // </div>
+
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      {filteredMessages.map((message) => (
+      {filteredMessages.map((message, index) => (
         <div
-          key={message.id}
+          // Usar una combinación única de id y index como key
+          key={`${message.id}-${index}`}
           className={`flex ${
             message.usuarioId === userId ? "justify-end" : "justify-start"
           }`}

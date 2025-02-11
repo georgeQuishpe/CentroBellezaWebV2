@@ -32,7 +32,9 @@ export function ClientChat() {
     e.preventDefault();
     if (!message.trim() || !connected) return;
 
-    sendMessage(message);
+    // sendMessage(message);
+    // setMessage("");
+    sendMessage(message.trim(), "admin"); // Especificar que el mensaje es para admin
     setMessage("");
   };
 

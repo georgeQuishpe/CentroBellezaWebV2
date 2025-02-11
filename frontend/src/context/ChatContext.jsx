@@ -6,7 +6,11 @@ import { jwtDecode } from "jwt-decode"; // Corregir la importación
 const ChatContext = createContext(null);
 
 // export function ChatProvider({ children, userId, isAdmin = false }) {
-export function ChatProvider({ children }) {
+export function ChatProvider({
+  children,
+  userId: initialUserId,
+  isAdmin = false,
+}) {
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -48,25 +52,46 @@ export function ChatProvider({ children }) {
 
   // Obtener el userId del localStorage cuando el componente se monta
   useEffect(() => {
-    const getUserIdFromToken = () => {
-      if (typeof window !== "undefined") {
-        const token = localStorage.getItem("token");
-        if (token) {
-          try {
-            // const decoded = JSON.parse(atob(token.split(".")[1]));
-            const decoded = jwtDecode(token);
-            return decoded.sub;
-          } catch (error) {
-            console.error("Error decodificando token:", error);
-            return null;
+    // const getUserIdFromToken = () => {
+    //   if (typeof window !== "undefined") {
+    //     const token = localStorage.getItem("token");
+    //     if (token) {
+    //       try {
+    //         // const decoded = JSON.parse(atob(token.split(".")[1]));
+    //         const decoded = jwtDecode(token);
+    //         return decoded.sub;
+    //       } catch (error) {
+    //         console.error("Error decodificando token:", error);
+    //         return null;
+    //       }
+    //     }
+    //   }
+    //   return null;
+    // };
+
+    // const id = getUserIdFromToken();
+    // setUserId(id);
+
+    if (!userId) {
+      const getUserIdFromToken = () => {
+        if (typeof window !== "undefined") {
+          const token = localStorage.getItem("token");
+          if (token) {
+            try {
+              const decoded = jwtDecode(token);
+              return decoded.sub;
+            } catch (error) {
+              console.error("Error decodificando token:", error);
+              return null;
+            }
           }
         }
-      }
-      return null;
-    };
+        return null;
+      };
 
-    const id = getUserIdFromToken();
-    setUserId(id);
+      const id = getUserIdFromToken();
+      setUserId(id);
+    }
 
     // if (id) {
     //   const { messages, sendMessage, connected, error } = useWebSocket(id);
