@@ -31,17 +31,34 @@ export function MessageList() {
   //       )
   //     : messages;
 
+  // const filteredMessages =
+  //   isAdmin && selectedUserId
+  //     ? messages.filter(
+  //         (msg) =>
+  //           msg.usuarioId === selectedUserId ||
+  //           msg.toUserId === selectedUserId ||
+  //           (msg.usuarioId.includes("admin_") &&
+  //             msg.toUserId === selectedUserId)
+  //       )
+  //     : messages.filter(
+  //         (msg) => msg.usuarioId === userId || msg.toUserId === userId
+  //       );
+
   const filteredMessages =
     isAdmin && selectedUserId
       ? messages.filter(
           (msg) =>
             msg.usuarioId === selectedUserId ||
             msg.toUserId === selectedUserId ||
-            (msg.usuarioId.includes("admin_") &&
+            (msg.usuarioId === `admin_${userId}` &&
               msg.toUserId === selectedUserId)
         )
       : messages.filter(
-          (msg) => msg.usuarioId === userId || msg.toUserId === userId
+          (msg) =>
+            msg.usuarioId === userId ||
+            msg.toUserId === userId ||
+            msg.usuarioId === "admin" ||
+            msg.toUserId === "admin"
         );
 
   // const isOwnMessage = (message) => {
@@ -53,9 +70,16 @@ export function MessageList() {
   //   );
   // };
 
+  // const isOwnMessage = (message) => {
+  //   if (isAdmin) {
+  //     return message.usuarioId.includes("admin_");
+  //   }
+  //   return message.usuarioId === userId;
+  // };
+
   const isOwnMessage = (message) => {
     if (isAdmin) {
-      return message.usuarioId.includes("admin_");
+      return message.usuarioId === `admin_${userId}`;
     }
     return message.usuarioId === userId;
   };
