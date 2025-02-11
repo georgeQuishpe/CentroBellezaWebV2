@@ -26,6 +26,7 @@ export function AdminChat() {
     try {
       const response = await fetch(
         `http://localhost:5004/api/v1/chat-messages?userId=${chatUserId}`
+        // `http://localhost:5004/api/v1/chat-messages/${chatUserId}`
       );
       if (!response.ok) {
         const errorText = await response.text();
