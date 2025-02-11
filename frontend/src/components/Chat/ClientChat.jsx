@@ -10,6 +10,11 @@ export function ClientChat() {
   const [message, setMessage] = useState("");
   const { sendMessage } = useWebSocket(userId, false);
 
+  // Filtra mensajes solo del cliente actual
+  const clientMessages = messages.filter(
+    (msg) => msg.usuarioId === userId || msg.toUserId === userId
+  );
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!message.trim() || !connected) return;
@@ -129,8 +134,12 @@ export function ClientChat() {
       </div>
 
       {/* Área de chat */}
-      <div className="flex-1 h-96 flex flex-col">
+      {/* <div className="flex-1 h-96 flex flex-col">
         <MessageList />
+        <MessageInput />
+      </div> */}
+      <div className="flex-1 h-96 flex flex-col">
+        <MessageList messages={clientMessages} />
         <MessageInput />
       </div>
 

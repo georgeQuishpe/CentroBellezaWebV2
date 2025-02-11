@@ -11,8 +11,7 @@ export function MessageList({ messages }) {
   // Agregar prop messages
   // Usar los mensajes que vienen como prop
   // const { messages, selectedUserId, isAdmin, userId } = useChat();
-  const { userId, isAdmin } = useChat(); // Solo obtener userId e isAdmin del contexto
-
+  const { userId, isAdmin, selectedUserId } = useChat(); // Solo obtener userId e isAdmin del contexto
   const bottomRef = useRef(null);
 
   useEffect(() => {
