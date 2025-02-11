@@ -35,10 +35,12 @@ module.exports = (io) => {
         }
 
         connectedUsers.set(userId, socket.id);
+
         if (isAdmin) {
             adminSockets.add(socket.id);
             try {
                 const chats = await service.findAllChats();
+                console.log('Enviando chats activos al admin:', chats);
                 socket.emit('activeChats', chats);
                 console.log(`Chats enviados al admin ${actualUserId}`);
             } catch (error) {
