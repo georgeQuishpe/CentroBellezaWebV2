@@ -131,26 +131,68 @@ export function MessageList() {
   //   return message.usuarioId === userId;
   // };
 
+  // const isOwnMessage = (message) => {
+  //   console.log("Checking message:", {
+  //     message,
+  //     isAdmin,
+  //     userId,
+  //     isStartingWithAdmin: message.usuarioId.startsWith("admin_"),
+  //   });
+
+  //   if (isAdmin) {
+  //     // Si es admin, los mensajes propios son los que vienen del admin
+  //     return (
+  //       message.usuarioId.startsWith("admin_") || message.usuarioId === userId
+  //     );
+  //   }
+  //   // Si es cliente, los mensajes propios son los que tienen su userId
+  //   return message.usuarioId === userId;
+  // };
+
   const isOwnMessage = (message) => {
-    console.log("Checking message:", {
-      message,
-      isAdmin,
-      userId,
-      isStartingWithAdmin: message.usuarioId.startsWith("admin_"),
-    });
     if (isAdmin) {
-      // Si es admin, los mensajes propios tienen el prefijo admin_
+      // Si es admin, los mensajes propios son los que empiezan con admin_
       return message.usuarioId.startsWith("admin_");
     }
-    // Si es cliente, los mensajes propios son los que tienen su userId
+    // Si es cliente, los mensajes propios son los que tienen su userId exacto
     return message.usuarioId === userId;
   };
 
+  // const isUserMessage = (message) => {
+  //   if (isAdmin) {
+  //     // En el chat del admin, los mensajes del usuario seleccionado van a la izquierda
+  //     return message.usuarioId === selectedUserId;
+  //   }
+  //   // En el chat del cliente, sus propios mensajes van a la derecha
+  //   return message.usuarioId === userId;
+  // };
+
+  // const isUserMessage = (message) => {
+  //   if (isAdmin) {
+  //     // En vista de admin:
+  //     // - Mensajes del usuario seleccionado van a la izquierda (gris)
+  //     // - Mensajes del admin van a la derecha (azul)
+  //     return message.usuarioId === selectedUserId;
+  //   } else {
+  //     // En vista de cliente:
+  //     // - Mensajes del cliente van a la derecha (azul)
+  //     // - Mensajes del admin van a la izquierda (gris)
+  //     return (
+  //       message.usuarioId.startsWith("admin_") || message.usuarioId === "admin"
+  //     );
+  //   }
+  // };
+
   const isUserMessage = (message) => {
     if (isAdmin) {
+      // En vista de admin:
+      // - Mensajes del usuario seleccionado van a la izquierda (gris)
       return message.usuarioId === selectedUserId;
     }
-    return message.usuarioId === userId;
+    // En vista de cliente:
+    // - Mensajes propios van a la derecha (azul)
+    // - Mensajes del admin van a la izquierda (gris)
+    return !isOwnMessage(message);
   };
 
   console.log("Messages:", messages);
@@ -276,6 +318,7 @@ export function MessageList() {
           key={`${message.id}-${index}`}
           className={`flex ${
             isOwnMessage(message) ? "justify-end" : "justify-start"
+            // isUserMessage(message) ? "justify-start" : "justify-end"
           }`}
         >
           <div
@@ -284,9 +327,27 @@ export function MessageList() {
                 ? "bg-blue-500 text-white"
                 : "bg-gray-200 text-black"
             }`}
+            //   isUserMessage(message)
+            //     ? "bg-gray-200 text-black"
+            //     : "bg-blue-500 text-white"
+            // }`}
           >
-            <div className="text-xs mb-1">
+            {/* <div className="text-xs mb-1">
               From: {message.usuarioId}, To: {message.toUserId}
+            </div>
+            <p>{message.mensaje}</p>
+            <span className="text-xs opacity-75">
+              {moment(message.fechaEnvio).format("LT")}
+            </span> */}
+
+            {/* <div className="text-xs mb-1">
+              {isUserMessage(message)
+                ? `De: ${message.usuarioId}`
+                : `De: Admin`}
+            </div> */}
+
+            <div className="text-xs mb-1">
+              {isOwnMessage(message) ? "Tú" : `De: ${message.usuarioId}`}
             </div>
             <p>{message.mensaje}</p>
             <span className="text-xs opacity-75">
