@@ -99,6 +99,10 @@ export function AdminChat() {
       )
     : [];
 
+  console.log("Active Chats:", activeChats);
+  console.log("Selected User:", selectedUserId);
+  console.log("Filtered Messages:", filteredMessages);
+
   return (
     <div className="flex h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
       {/* Chat List */}

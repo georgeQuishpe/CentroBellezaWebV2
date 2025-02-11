@@ -58,8 +58,11 @@ module.exports = (io) => {
         }
 
         socket.on('sendMessage', async (messageData) => {
-            console.log('Mensaje recibido en servidor:', messageData);
-
+            console.log('Mensaje recibido en servidor:', {
+                messageData,
+                connectedUsers: Array.from(connectedUsers.entries()),
+                adminSockets: Array.from(adminSockets)
+            });
             try {
                 console.log('Mensaje recibido:', messageData);
 

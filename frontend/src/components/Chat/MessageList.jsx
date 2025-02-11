@@ -6,37 +6,39 @@ import "moment/locale/es";
 
 moment.locale("es");
 
-export function MessageList() {
-  const { messages, selectedUserId, isAdmin, userId } = useChat();
+export function MessageList({ messages }) {
+  // Usar los mensajes que vienen como prop
+  // const { messages, selectedUserId, isAdmin, userId } = useChat();
+  const { userId } = useChat(); // Solo necesitamos userId del contexto
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const filteredMessages =
-    isAdmin && selectedUserId
-      ? messages.filter(
-          (msg) =>
-            msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
-        )
-      : messages;
+  // const filteredMessages =
+  //   isAdmin && selectedUserId
+  //     ? messages.filter(
+  //         (msg) =>
+  //           msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+  //       )
+  //     : messages;
 
-  const isOwnMessage = (message) => {
-    if (isAdmin) {
-      return message.usuarioId.includes("admin");
-    }
-    return (
-      message.usuarioId !== "admin" && !message.usuarioId.includes("admin")
-    );
-  };
+  // const isOwnMessage = (message) => {
+  //   if (isAdmin) {
+  //     return message.usuarioId.includes("admin");
+  //   }
+  //   return (
+  //     message.usuarioId !== "admin" && !message.usuarioId.includes("admin")
+  //   );
+  // };
 
-  const isUserMessage = (message) => {
-    if (isAdmin) {
-      return message.usuarioId === selectedUserId;
-    }
-    return message.usuarioId === userId;
-  };
+  // const isUserMessage = (message) => {
+  //   if (isAdmin) {
+  //     return message.usuarioId === selectedUserId;
+  //   }
+  //   return message.usuarioId === userId;
+  // };
 
   return (
     // <div className="flex-1 overflow-y-auto p-4 space-y-4">
