@@ -11,7 +11,16 @@ export function ChatProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // Move useWebSocket hook to top level
-  const { messages, sendMessage, connected, error } = useWebSocket(userId);
+  // const { messages, sendMessage, connected, error } = useWebSocket(userId);
+  const {
+    messages,
+    sendMessage,
+    connected,
+    error,
+    activeChats, // Agregar esto
+    selectedUserId, // Agregar esto
+    selectChat, // Agregar esto
+  } = useWebSocket(userId);
 
   // const {
   //     connected,
@@ -100,6 +109,10 @@ export function ChatProvider({ children }) {
     sendMessage,
     connected,
     error,
+    activeChats, // Agregar esto
+    selectedUserId, // Agregar esto
+    selectChat, // Agregar esto
+    isAdmin: true, // Agregar esto para el AdminChat
   };
 
   // const userId = getUserId();

@@ -15,6 +15,8 @@ export function AdminChat() {
     socket, // Assuming you have a socket in your ChatContext
   } = useChat();
 
+  const [filteredMessages, setFilteredMessages] = useState([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [unreadCounts, setUnreadCounts] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +51,27 @@ export function AdminChat() {
     selectChat(chatUserId);
     await fetchChatMessages(chatUserId);
   };
+
+  // Agregar este efecto para manejar los mensajes filtrados
+  useEffect(() => {
+    if (messages && selectedUserId) {
+      const filtered = messages.filter(
+        (msg) =>
+          msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+      );
+      setFilteredMessages(filtered);
+    }
+  }, [messages, selectedUserId]);
+
+  // Agregar este console.log para debug
+  useEffect(() => {
+    console.log("Estado actual:", {
+      activeChats,
+      selectedUserId,
+      messages,
+      filteredMessages,
+    });
+  }, [activeChats, selectedUserId, messages, filteredMessages]);
 
   // Real-time message handling
   useEffect(() => {
@@ -93,12 +116,13 @@ export function AdminChat() {
     chat.userId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredMessages = Array.isArray(messages)
-    ? messages.filter(
-        (msg) =>
-          msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
-      )
-    : [];
+  // const filteredMessages = Array.isArray(messages)
+  //   ? messages.filter(
+  //       (msg) =>
+  //         msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+  //     )
+  //   : [];
+
   // const filteredMessages =
   //   messages?.filter(
   //     (msg) =>

@@ -222,9 +222,25 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
                         setMessages((prevMessages) => [...prevMessages, message]);
                     });
 
+                    // socketRef.current.on("previousMessages", (previousMessages) => {
+                    //     console.log("Mensajes históricos recibidos:", previousMessages);
+                    //     setMessages(previousMessages || []);
+                    // });
                     socketRef.current.on("previousMessages", (previousMessages) => {
                         console.log("Mensajes históricos recibidos:", previousMessages);
                         setMessages(previousMessages || []);
+                        if (isAdmin) {
+                            // Para admin, necesitamos extraer los chats únicos
+                            const uniqueChats = [...new Set(previousMessages.map(msg =>
+                                msg.usuarioId === userId ? msg.toUserId : msg.usuarioId
+                            ))].map(chatUserId => ({
+                                userId: chatUserId,
+                                lastMessage: previousMessages.find(msg =>
+                                    msg.usuarioId === chatUserId || msg.toUserId === chatUserId
+                                )?.mensaje || 'No hay mensajes'
+                            }));
+                            setActiveChats(uniqueChats);
+                        }
                     });
 
                     socketRef.current.on("disconnect", () => {
@@ -250,10 +266,17 @@ export const useWebSocket = (initialUserId = null, isAdmin = false) => {
                         setConnected(false);
                     });
 
-                    socketRef.current.on("activeChats", (chats) => {
-                        if (isAdmin) {
-                            console.log("Chats activos recibidos:", chats);
-                            setActiveChats(chats || []);
+                    // socketRef.current.on("activeChats", (chats) => {
+                    //     if (isAdmin) {
+                    //         console.log("Chats activos recibidos:", chats);
+                    //         setActiveChats(chats || []);
+                    //     }
+                    // });
+                    socketRef.current.on('activeChats', (chats) => {
+                        console.log('Chats activos recibidos:', chats);
+                        // setActiveChats(chats || []);
+                        if (isActuallyAdmin) {  // Agregar esta condición
+                            setActiveChats(chats);  // Esto debería actualizar activeChats
                         }
                     });
 

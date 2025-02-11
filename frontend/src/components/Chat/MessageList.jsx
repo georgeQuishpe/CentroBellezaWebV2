@@ -6,17 +6,20 @@ import "moment/locale/es";
 
 moment.locale("es");
 
-export function MessageList() {
+// export function MessageList() {
+export function MessageList({ messages }) {
+  // Agregar prop messages
   // Usar los mensajes que vienen como prop
-  const { messages, selectedUserId, isAdmin, userId } = useChat();
-  // const { userId } = useChat(); // Solo necesitamos userId del contexto
+  // const { messages, selectedUserId, isAdmin, userId } = useChat();
+  const { userId, isAdmin } = useChat(); // Solo obtener userId e isAdmin del contexto
+
   const bottomRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  if (!messages) return null; // O un mensaje de carga
+  if (!messages?.length) return null;
 
   const filteredMessages =
     isAdmin && selectedUserId
