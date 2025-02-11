@@ -360,9 +360,12 @@ export default function UserDashboard() {
                             ))}
                         </div>
                     </div>
-
+{/* 
                     <ChatProvider userId={user.id}>
                         <ChatWindow isAdmin={false} />
+                    </ChatProvider> */}
+                    <ChatProvider userId={user.id} isAdmin={false}>
+                        <ChatWindow />
                     </ChatProvider>
                 </div>
                 <UserAppointments key={appointmentsKey} userId={user.id} />

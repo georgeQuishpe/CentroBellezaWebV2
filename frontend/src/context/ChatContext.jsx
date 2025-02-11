@@ -24,8 +24,8 @@ export function ChatProvider({
     activeChats, // Agregar esto
     selectedUserId, // Agregar esto
     selectChat, // Agregar esto
-  } = useWebSocket(userId);
-
+    // } = useWebSocket(userId);
+  } = useWebSocket(userId, isAdmin);
   // const {
   //     connected,
   //     messages,
@@ -137,7 +137,8 @@ export function ChatProvider({
     activeChats, // Agregar esto
     selectedUserId, // Agregar esto
     selectChat, // Agregar esto
-    isAdmin: true, // Agregar esto para el AdminChat
+    // isAdmin: true, // Agregar esto para el AdminChat
+    isAdmin, // Usar el valor de la prop en lugar de hardcodearlo
   };
 
   // const userId = getUserId();
