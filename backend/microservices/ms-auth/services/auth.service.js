@@ -2,9 +2,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { sendEmail } = require('./mailer.service');
 const UsersService = require('./users.service');
-const { User } = require('../models'); // Add this line
-
-
 
 
 class AuthService {

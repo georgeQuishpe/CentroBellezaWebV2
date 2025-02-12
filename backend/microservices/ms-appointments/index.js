@@ -5,6 +5,12 @@ const router = express.Router();
 const metricsMiddleware = require('./services/monitoring');
 const appointmentsRouter = require('./routes/appointments.routes');
 
+// Import routes
+const chatMessagesRoutes = require('./chatMessages.routes');
+
+// Configure routes
+router.use('/chat-messages', chatMessagesRoutes);
+
 const app = express();
 app.use(metricsMiddleware);
 
@@ -14,7 +20,7 @@ const ALLOWED_ORIGINS = [
   "http://localhost:5000",
   "http://ms-auth:5000",
   "http://ms-services:5000",
-  "http://ms-appointments:5000", 
+  "http://ms-appointments:5000",
   "http://ms-messages:5000",
   // Añadir tu dominio de producción cuando lo tengas
 ];
