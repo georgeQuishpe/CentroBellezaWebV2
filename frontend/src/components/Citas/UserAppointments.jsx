@@ -165,11 +165,6 @@ export function UserAppointments({ userId }) {
                       )?.nombre
                     }
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    {/* Mostrar el precio y duración */}$ $
-                    {appointment.servicio?.precio || "0"} -{" "}
-                    {appointment.servicio?.duracion || "0"} minutos
-                  </div>
                   {/* <div className="text-sm text-gray-600 flex items-center mt-1">
                     <Calendar className="mr-2 text-gray-400" size={16} />
                     {appointment.fecha}

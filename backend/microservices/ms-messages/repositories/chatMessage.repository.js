@@ -1,6 +1,8 @@
-const ChatMessage = require('../models/chatMessage.model');
-const { Op } = require('sequelize');
-const { sequelize } = require('../libs/sequelize');
+// const ChatMessage = require('../models/chatMessage.model');
+const { ChatMessage } = require('../models/chatMessage.model');
+const { Op, QueryTypes } = require('sequelize');
+const sequelize = require('../libs/sequelize'); // Change this line - remove destructuring
+
 
 class ChatMessageRepository {
     async findByUser(userId) {
@@ -96,7 +98,9 @@ class ChatMessageRepository {
         //     timestamp: chat.timestamp
         // }));
 
-        const result = await models.ChatMessage.sequelize.query(`
+        // const result = await models.ChatMessage.sequelize.query(`
+        // const result = await ChatMessage.sequelize.query(`
+        const result = await sequelize.query(`
             SELECT DISTINCT ON (cm.usuarioid) 
                 cm.usuarioid as "userId",
                 cm.mensaje as "lastMessage",
@@ -105,7 +109,9 @@ class ChatMessageRepository {
             WHERE cm.touserid = 'admin' OR cm.usuarioid = 'admin'
             ORDER BY cm.usuarioid, cm.fechaenvio DESC
         `, {
-            type: models.ChatMessage.sequelize.QueryTypes.SELECT
+            // type: models.ChatMessage.sequelize.QueryTypes.SELECT
+            // type: ChatMessage.sequelize.QueryTypes.SELECT
+            type: QueryTypes.SELECT
         });
 
         console.log('Chats encontrados:', result);

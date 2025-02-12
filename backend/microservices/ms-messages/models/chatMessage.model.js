@@ -2,7 +2,7 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../libs/sequelize');
 
-class ChatMessage extends Model {}
+class ChatMessage extends Model { }
 
 ChatMessage.init(
     {
@@ -44,5 +44,5 @@ ChatMessage.init(
         timestamps: false,
     }
 );
-    
-module.exports = ChatMessage;
+
+module.exports = { ChatMessage };

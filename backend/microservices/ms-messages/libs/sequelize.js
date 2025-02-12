@@ -8,7 +8,6 @@ const sequelize = new Sequelize({
     database: process.env.DB_NAME_MESSAGES || 'chat_db',
     port: process.env.DB_PORT_MESSAGES || '5432',
     dialect: 'postgres',
-    dialect: 'postgres',
     dialectOptions: {
         ssl: process.env.DB_SSL === 'true' ? { require: true, rejectUnauthorized: false } : false
     },
