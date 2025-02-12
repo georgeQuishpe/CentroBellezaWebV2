@@ -15,17 +15,20 @@ export function AdminChat() {
     socket, // Assuming you have a socket in your ChatContext
   } = useChat();
 
+  const [filteredMessages, setFilteredMessages] = useState([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [unreadCounts, setUnreadCounts] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState([]); 
+  const [messages, setMessages] = useState([]);
 
   // Fetch messages for a selected chat
   const fetchChatMessages = useCallback(async (chatUserId) => {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:5000/api/v1/chat-messages?userId=${chatUserId}`
+        `http://localhost:5004/api/v1/chat-messages?userId=${chatUserId}`
+        // `http://localhost:5004/api/v1/chat-messages/${chatUserId}`
       );
       if (!response.ok) {
         const errorText = await response.text();
@@ -37,7 +40,7 @@ export function AdminChat() {
       setMessages(Array.isArray(chatMessages) ? chatMessages : []);
     } catch (error) {
       console.error("Error al cargar mensajes:", error);
-      setMessages([]); 
+      setMessages([]);
     } finally {
       setIsLoading(false);
     }
@@ -49,6 +52,27 @@ export function AdminChat() {
     await fetchChatMessages(chatUserId);
   };
 
+  // Agregar este efecto para manejar los mensajes filtrados
+  useEffect(() => {
+    if (messages && selectedUserId) {
+      const filtered = messages.filter(
+        (msg) =>
+          msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+      );
+      setFilteredMessages(filtered);
+    }
+  }, [messages, selectedUserId]);
+
+  // Agregar este console.log para debug
+  useEffect(() => {
+    console.log("Estado actual:", {
+      activeChats,
+      selectedUserId,
+      messages,
+      filteredMessages,
+    });
+  }, [activeChats, selectedUserId, messages, filteredMessages]);
+
   // Real-time message handling
   useEffect(() => {
     if (socket && selectedUserId) {
@@ -56,26 +80,22 @@ export function AdminChat() {
       const handleNewMessage = (message) => {
         // Only add message if it's related to the current selected chat
         if (
-          message.usuarioId === selectedUserId || 
+          message.usuarioId === selectedUserId ||
           message.toUserId === selectedUserId
         ) {
           setMessages((prevMessages) => {
             // Prevent duplicate messages
-            const isDuplicate = prevMessages.some(
-              (m) => m.id === message.id
-            );
-            return isDuplicate 
-              ? prevMessages 
-              : [...prevMessages, message];
+            const isDuplicate = prevMessages.some((m) => m.id === message.id);
+            return isDuplicate ? prevMessages : [...prevMessages, message];
           });
         }
       };
 
-      socket.on('new-message', handleNewMessage);
+      socket.on("new-message", handleNewMessage);
 
       // Cleanup socket listener
       return () => {
-        socket.off('new-message', handleNewMessage);
+        socket.off("new-message", handleNewMessage);
       };
     }
   }, [socket, selectedUserId]);
@@ -92,16 +112,42 @@ export function AdminChat() {
   }, [messages, userId]);
 
   // Filter chats and messages
-  const filteredChats = activeChats?.filter((chat) =>
-    chat.userId.toLowerCase().includes(searchTerm.toLowerCase())
+  // const filteredChats = activeChats?.filter(
+  //   (chat) =>
+  //     chat.userId.toLowerCase().includes(searchTerm.toLowerCase()) &&
+  //     //No estaba
+  //     !chat.userId.includes("admin_")
+  // );
+
+  // const filteredChats = activeChats?.filter(
+  //   (chat) =>
+  //     chat.userId.toLowerCase().includes(searchTerm.toLowerCase()) &&
+  //     !chat.userId.includes("admin")
+  // );
+
+  const filteredChats = activeChats?.filter(
+    (chat) =>
+      !chat.userId.includes("admin") &&
+      !chat.userId.includes("1756088099") &&
+      chat.userId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredMessages = Array.isArray(messages)
-    ? messages.filter(
-        (msg) =>
-          msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
-      )
-    : [];
+  // const filteredMessages = Array.isArray(messages)
+  //   ? messages.filter(
+  //       (msg) =>
+  //         msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+  //     )
+  //   : [];
+
+  // const filteredMessages =
+  //   messages?.filter(
+  //     (msg) =>
+  //       msg.usuarioId === selectedUserId || msg.toUserId === selectedUserId
+  //   ) || [];
+
+  console.log("Active Chats:", activeChats);
+  console.log("Selected User:", selectedUserId);
+  console.log("Filtered Messages:", filteredMessages);
 
   return (
     <div className="flex h-[600px] bg-white rounded-lg shadow-lg overflow-hidden">
@@ -117,7 +163,7 @@ export function AdminChat() {
           />
         </div>
         <div className="overflow-y-auto h-[calc(100%-4rem)]">
-          {filteredChats?.map((chat) => (
+          {/* {filteredChats?.map((chat) => (
             <div
               key={chat.userId}
               onClick={() => handleChatSelect(chat.userId)}
@@ -133,6 +179,19 @@ export function AdminChat() {
                 </span>
               )}
             </div>
+          ))} */}
+
+          {filteredChats?.map((chat) => (
+            <div
+              key={chat.userId}
+              onClick={() => handleChatSelect(chat.userId)}
+              className={`p-4 font-medium text-black cursor-pointer hover:bg-gray-100 relative ${
+                selectedUserId === chat.userId ? "bg-blue-50" : ""
+              }`}
+            >
+              <div className="font-bold">Usuario: {chat.userId}</div>
+              <div className="text-sm text-gray-500">{chat.lastMessage}</div>
+            </div>
           ))}
         </div>
       </div>
@@ -142,7 +201,9 @@ export function AdminChat() {
         {selectedUserId ? (
           <>
             <div className="p-4 border-b bg-white">
-              <div className="text-blue-500 font-bold">Chat con {selectedUserId}</div>
+              <div className="text-blue-500 font-bold">
+                Chat con {selectedUserId}
+              </div>
               <div className="text-sm text-black">
                 {connected ? "En línea" : "Desconectado"}
               </div>

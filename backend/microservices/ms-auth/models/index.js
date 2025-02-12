@@ -1,4 +1,4 @@
-const { User, UserSchema } = require('./users.model');
+const { User, UserSchema } = require('./user.model');
 
 function setupModels(sequelize) {
     // Inicialización de modelos

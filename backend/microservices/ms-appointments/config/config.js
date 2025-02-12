@@ -8,6 +8,7 @@ const config = {
     dbHost: process.env.DB_HOST_APPOINTMENT || 'db-appointments',  // Usa el nombre del servicio de la base de datos en Docker
     dbName: process.env.DB_NAME_APPOINTMENT || 'citas_db',
     dbPort: process.env.DB_PORT_APPOINTMENT || '5435',
+    jwtSecret: process.env.JWT_SECRET || 'una_clave_secreta_muy_larga_y_segura'
 };
 
 module.exports = { config };

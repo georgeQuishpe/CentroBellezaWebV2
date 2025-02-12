@@ -1,20 +1,20 @@
-const { models } = require('../libs/sequelize');
+const User = require('../models/user.model');
 
 class UserRepository {
     async findAll() {
-        return await models.User.findAll();
+        return await User.findAll();
     }
 
     async findById(id) {
-        return await models.User.findByPk(id);
+        return await User.findByPk(id);
     }
 
     async findByEmail(email) {
-        return await models.User.findOne({ where: { email } });
+        return await User.findOne({ where: { email } });
     }
 
     async create(data) {
-        return await models.User.create(data);
+        return await User.create(data);
     }
 
     async update(id, data) {

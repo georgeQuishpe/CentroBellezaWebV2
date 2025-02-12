@@ -1,16 +1,16 @@
-const { models } = require('../libs/sequelize');
+const Service = require('../models/service.model');
 
 class ServiceRepository {
     async findAll() {
-        return await models.Service.findAll();
+        return await Service.findAll();
     }
 
     async findById(id) {
-        return await models.Service.findByPk(id);
+        return await Service.findByPk(id);
     }
 
     async create(data) {
-        return await models.Service.create(data);
+        return await Service.create(data);
     }
 
     async update(id, data) {

@@ -4,8 +4,18 @@ const axios = require('axios');
 
 const getAllMessages = async (req, res) => {
     try {
-        const messages = await chatMessageService.find();
-        res.json(messages);
+        // const messages = await chatMessageService.find();
+        // res.json(messages);
+        // const messages = await chatMessageService.findByUser();
+        // res.json(messages);
+        const { userId, toUserId } = req.query;
+        if (userId) {
+            const messages = await chatMessageService.findByUser(userId);
+            res.json(messages);
+        } else {
+            const messages = await chatMessageService.findByUser();
+            res.json(messages);
+        }
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

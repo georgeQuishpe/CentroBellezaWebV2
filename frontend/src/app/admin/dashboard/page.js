@@ -9,19 +9,30 @@ import { useAuth } from '../../../hooks/useAuth';  // Añade esta línea
 import { useAuthFetch } from '../../../hooks/useAuthFetch';  // Añade esta línea
 
 export default function AdminDashboard() {
-    const router = useRouter();
-    const { user, loading } = useAuth();
-    const { fetchWithAuth } = useAuthFetch();
 
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
+    const [users, setUsers] = useState([]);
+    const [services, setServices] = useState([]);
+    const [editingService, setEditingService] = useState(null);
+    const [selectedRole, setSelectedRole] = useState('');
+    const [appointments, setAppointments] = useState([]);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [error, setError] = useState('');
     const [confirmationModal, setConfirmationModal] = useState({
         isOpen: false,
         title: '',
         message: '',
         onConfirm: null
     });
+
+
+
     const [mounted, setMounted] = useState(false);
-    const [services, setServices] = useState([]);
-    const [users, setUsers] = useState([]);
+
+
     const [newService, setNewService] = useState({
         nombre: '',
         descripcion: '',
@@ -29,10 +40,11 @@ export default function AdminDashboard() {
         duracion: '',
         estado: true
     });
-    const [editingService, setEditingService] = useState(null);
-    const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [editingUser, setEditingUser] = useState(null);
+
+    const { fetchWithAuth } = useAuthFetch();
+
 
     const handleLogout = () => {
         localStorage.removeItem('user');
@@ -43,6 +55,18 @@ export default function AdminDashboard() {
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    useEffect(() => {
+        if (!loading) {
+            if (!user) {
+                router.push('/login');
+            } else if (user.rol !== 'Admin') {
+                console.log('Usuario no admin intentando acceder:', user);
+                router.push('/user/dashboard');
+            }
+        }
+    }, [user, loading, router]);
+
 
     // Efecto para cargar datos (combinado con autenticación)
     useEffect(() => {
@@ -56,8 +80,8 @@ export default function AdminDashboard() {
             try {
                 // Cargar datos solo si es admin
                 const [servicesResponse, usersResponse] = await Promise.all([
-                    fetch('http://localhost:5000/api/v1/services/'),
-                    fetch('http://localhost:5000/api/v1/users/')
+                    fetch('http://localhost:5002/api/v1/services/'),
+                    fetch('http://localhost:5001/api/v1/users/')
                 ]);
 
                 if (!servicesResponse.ok || !usersResponse.ok) {
@@ -83,13 +107,9 @@ export default function AdminDashboard() {
         }
     }, [user, loading, router]);
 
-    if (loading || !mounted) {
-        return <div>Cargando...</div>;
-    }
+    if (loading) return <div>Cargando...</div>;
+    if (!user || user.rol !== 'Admin') return null;
 
-    if (!user || user.rol !== 'Admin') {
-        return null;
-    }
 
     // Función para mostrar el modal de confirmación
     const showConfirmation = (title, message, onConfirm) => {
@@ -113,7 +133,7 @@ export default function AdminDashboard() {
                 throw new Error('No hay sesión activa');
             }
 
-            const response = await fetch('http://localhost:5000/api/v1/services/', {
+            const response = await fetch('http://localhost:5002/api/v1/services/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -147,7 +167,7 @@ export default function AdminDashboard() {
                     const serviceToUpdate = services.find(s => s.id === serviceId);
 
                     const updatedData = await fetchWithAuth(
-                        `http://localhost:5000/api/v1/services/${serviceId}`,
+                        `http://localhost:5002/api/v1/services/${serviceId}`,
                         {
                             method: 'PUT',
                             body: JSON.stringify(serviceToUpdate)
@@ -177,7 +197,7 @@ export default function AdminDashboard() {
                         throw new Error('No hay sesión activa');
                     }
 
-                    const response = await fetch(`http://localhost:5000/api/v1/services/${id}`, {
+                    const response = await fetch(`http://localhost:5002/api/v1/services/${id}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${userData.token}`,
@@ -206,7 +226,7 @@ export default function AdminDashboard() {
             `¿Estás seguro de que deseas cambiar el rol del usuario a ${newRole}?`,
             async () => {
                 try {
-                    const response = await fetch(`http://localhost:5000/api/v1/users/${userId}`, {
+                    const response = await fetch(`http://localhost:5001/api/v1/users/${userId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ rol: newRole }),
@@ -230,9 +250,16 @@ export default function AdminDashboard() {
             })
     };
 
+
+
+
     if (!mounted || !user) {
         return null;
     }
+
+    // Renderizado
+    if (loading) return <div>Cargando...</div>;
+    if (!user || user.rol !== 'Admin') return null;
 
     return (
         <div className="min-h-screen bg-gray-100 p-8">
@@ -499,7 +526,13 @@ export default function AdminDashboard() {
 
                     {/* Chat en la tercera columna */}
                     <div className="col-span-1">
-                        <ChatProvider userId={`admin_${user?.id}`} isAdmin={true}>
+                        {/* <ChatProvider>
+                            <AdminChat isAdmin={true} userId={`admin_${user?.id}`} />
+                        </ChatProvider> */}
+                        {/* <ChatProvider userId={`admin_${user?.id}`} isAdmin={true}>
+                            <AdminChat />
+                        </ChatProvider> */}
+                        <ChatProvider userId={user.id} isAdmin={true}>
                             <AdminChat />
                         </ChatProvider>
                     </div>
@@ -519,6 +552,7 @@ export default function AdminDashboard() {
 function AppointmentManager() {
     const [appointments, setAppointments] = useState([]);
     const [services, setServices] = useState([]);
+    const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingAppointment, setEditingAppointment] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -540,7 +574,21 @@ function AppointmentManager() {
     useEffect(() => {
         fetchAppointments();
         fetchServices();
+        fetchUsers();
     }, []);
+
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch("http://localhost:5000/api/v1/users/", {
+                headers: getAuthHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar usuarios');
+            const data = await response.json();
+            setUsers(data);
+        } catch (error) {
+            console.error('Error al cargar usuarios:', error);
+        }
+    };
 
     const showConfirmation = (title, message, onConfirm) => {
         setConfirmationModal({
@@ -556,7 +604,7 @@ function AppointmentManager() {
 
     const fetchServices = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/v1/services/", {
+            const response = await fetch("http://localhost:5002/api/v1/services", {
                 headers: getAuthHeaders()
             });
             if (!response.ok) throw new Error('Error al cargar servicios');
@@ -569,7 +617,7 @@ function AppointmentManager() {
 
     const handleEditAppointment = async (appointmentData) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/v1/appointments/${appointmentData.id}`, {
+            const response = await fetch(`http://localhost:5003/api/v1/appointments/${appointmentData.id}`, {
                 method: "PUT",
                 headers: getAuthHeaders(),
                 body: JSON.stringify(appointmentData),
@@ -583,14 +631,14 @@ function AppointmentManager() {
             alert("Error al actualizar la cita");
         }
     };
-    
+
     const handleDeleteAppointment = async (id) => {
         showConfirmation(
             "Eliminar Cita",
             "¿Estás seguro de que deseas eliminar esta cita? Esta acción no se puede deshacer.",
             async () => {
                 try {
-                    const response = await fetch(`http://localhost:5000/api/v1/appointments/${id}`, {
+                    const response = await fetch(`http://localhost:5003/api/v1/appointments/${id}`, {
                         method: "DELETE",
                         headers: getAuthHeaders()
                     });
@@ -608,7 +656,13 @@ function AppointmentManager() {
 
     const fetchAppointments = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/v1/appointments/", {
+            // Añadir logs para debug
+            console.log('Intentando obtener citas...');
+            const headers = getAuthHeaders();
+            console.log('Headers:', headers);
+
+
+            const response = await fetch("http://localhost:5003/api/v1/appointments", {
                 headers: getAuthHeaders()
             });
             if (!response.ok) throw new Error('Error al cargar citas');
@@ -629,7 +683,7 @@ function AppointmentManager() {
             `¿Estás seguro de que deseas cambiar el estado de la cita a "${newStatus}"?`,
             async () => {
                 try {
-                    const response = await fetch(`http://localhost:5000/api/v1/appointments/${appointmentId}`, {
+                    const response = await fetch(`http://localhost:5003/api/v1/appointments/${appointmentId}`, {
                         method: "PUT",
                         headers: getAuthHeaders(),
                         body: JSON.stringify({ estado: newStatus }),
@@ -670,10 +724,10 @@ function AppointmentManager() {
                             {appointments.map((appointment) => (
                                 <tr key={appointment.id}>
                                     <td className="text-black px-6 py-4 whitespace-nowrap">
-                                        {appointment.usuario?.nombre}
+                                        {users.find(u => u.id === appointment.usuarioId)?.nombre}
                                     </td>
                                     <td className="text-black px-6 py-4 whitespace-nowrap">
-                                        {appointment.servicio?.nombre}
+                                        {services.find(s => s.id === appointment.servicioId)?.nombre}
                                     </td>
                                     <td className="text-black px-6 py-4 whitespace-nowrap">
                                         {new Date(appointment.fecha).toLocaleString()}

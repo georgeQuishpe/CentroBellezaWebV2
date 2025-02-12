@@ -1,28 +1,60 @@
-const { models } = require('../libs/sequelize');
+const Appointment = require('../models/appointment.model');
 const { Op } = require('sequelize');
 
 class AppointmentsRepository {
     async create(data) {
-        return await models.Appointment.create(data);
+        return await Appointment.create(data);
     }
 
     async findAll() {
-        return await models.Appointment.findAll({
-        });
+        return await Appointment.findAll();
     }
 
     async findById(id) {
-        return await models.Appointment.findByPk(id);
+        return await Appointment.findByPk(id);
     }
 
     async findByUser(userId) {
-        return await models.Appointment.findAll({
+        return await Appointment.findAll({
             where: { usuarioId: userId }
         });
     }
 
+    // async findByUser(userId, options = {}) {
+    //     return await models.Appointment.findAll({
+    //         where: { usuarioId: userId },
+    //         ...options,
+    //         include: [
+    //             {
+    //                 model: models.Service,
+    //                 as: 'servicio',
+    //                 attributes: ['nombre', 'precio', 'duracion']
+    //             }
+    //         ]
+    //     });
+    // }
+
+
+    //     async findByUser(userId) {
+    //     return await models.Appointment.findAll({
+    //         where: { usuarioId: userId },
+    //         include: [
+    //             {
+    //                 model: models.Service,
+    //                 as: 'servicio',
+    //                 attributes: ['id', 'nombre', 'precio', 'duracion']
+    //             },
+    //             {
+    //                 model: models.User,
+    //                 as: 'usuario',
+    //                 attributes: ['id', 'nombre', 'email']
+    //             }
+    //         ]
+    //     });
+    // }
+
     async findByDateAndService(fecha, servicioId) {
-        return await models.Appointment.findOne({
+        return await Appointment.findOne({
             where: { fecha, servicioId }
         });
     }
@@ -44,7 +76,7 @@ class AppointmentsRepository {
     async getAvailableHours(date) {
         const workingHours = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00'];
 
-        const appointments = await models.Appointment.findAll({
+        const appointments = await Appointment.findAll({
             where: {
                 fecha: {
                     [Op.gte]: new Date(date),

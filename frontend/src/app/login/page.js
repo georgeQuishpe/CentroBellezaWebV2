@@ -1,8 +1,9 @@
 'use client'
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { authService } from '../../services/authService'
+import { authService } from '@/services/authService'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -15,7 +16,7 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/auth/login', {
+      const response = await fetch('http://localhost:5001/api/v1/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,17 +30,57 @@ export default function LoginPage() {
         throw new Error(data.message || 'Error al iniciar sesión')
       }
 
-      // Usar el servicio de autenticación
-      authService.setAuth(data);
-
-      // Modificar la parte de redirección
-      if (data.rol === 'Admin') {
-        router.push('/admin/dashboard')  // Asegúrate de que esta ruta coincida con tu estructura
-      } else {
-        router.push('/user/dashboard')  // Ruta para usuarios normales
+      if (!data.user || !data.token) {
+        throw new Error('Respuesta de login inválida');
       }
+
+      // Guardar token
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        console.log('Token guardado:', data.token); // Para debug
+      } else {
+        console.error('No se recibió token del servidor');
+      }
+
+      console.log('Datos del usuario:', data.user);
+      console.log('Rol del usuario:', data.user.rol);
+
+      // Guardar datos de usuario
+      authService.setAuth(data)
+      // En login/page.js después del fetch
+      console.log('Respuesta completa:', data);
+
+      // Redirección basada en rol
+      // if (data.rol === 'Admin') {
+      //   router.push('/admin/dashboard')
+      // } else {
+      //   router.push('/user/dashboard')
+      // }
+
+      // if (data.user.rol === 'Admin') {  // Asegúrate de que coincida exactamente
+      //   router.push('/admin/dashboard')
+      // } else {
+      //   router.push('/user/dashboard')
+      // }
+
+      // if (data.user.rol === 'Admin') {
+      //   await router.push('/admin/dashboard');
+      // } else {
+      //   await router.push('/user/dashboard');
+      // }
+
+      if (data.user.rol.trim() === 'Admin') {
+        console.log('Redirigiendo a dashboard admin');
+        await router.push('/admin/dashboard');
+      } else {
+        console.log('Redirigiendo a dashboard usuario');
+        await router.push('/user/dashboard');
+      }
+
+
     } catch (err) {
       setError(err.message)
+      console.error('Error en login:', err)
     }
   }
 

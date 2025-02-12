@@ -28,8 +28,12 @@ export function MessageInput() {
     }
   };
 
+  // const isDisabled =!connected || !message.trim() || (isAdmin && !selectedUserId) || isSending;
   const isDisabled =
-    !connected || !message.trim() || (isAdmin && !selectedUserId) || isSending;
+    !connected ||
+    !message.trim() ||
+    (isAdmin ? !selectedUserId : false) ||
+    isSending;
 
   return (
     <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2">
@@ -45,6 +49,14 @@ export function MessageInput() {
         className="flex-1 border rounded-lg px-3 py-2 text-black focus:outline-none focus:border-blue-500"
         disabled={!connected || (isAdmin && !selectedUserId)}
       />
+      {/* <input
+        type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Escribe un mensaje..."
+        className="flex-1 border rounded-lg px-3 py-2 text-black focus:outline-none focus:border-blue-500"
+        disabled={!connected || (isAdmin && !selectedUserId)}
+      /> */}
       <button
         type="submit"
         disabled={isDisabled}

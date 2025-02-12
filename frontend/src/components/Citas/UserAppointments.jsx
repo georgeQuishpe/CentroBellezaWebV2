@@ -4,6 +4,7 @@ import { Clock, Calendar, X } from "lucide-react";
 
 export function UserAppointments({ userId }) {
   const [appointments, setAppointments] = useState([]);
+  const [services, setServices] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +21,7 @@ export function UserAppointments({ userId }) {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://localhost:5000/api/v1/appointments/user/${userId}`,
+          `http://localhost:5003/api/v1/appointments/user/${userId}`,
           {
             headers: getAuthHeaders(),
           }
@@ -30,7 +31,7 @@ export function UserAppointments({ userId }) {
           const errorData = await response.json();
           throw new Error(
             errorData.message ||
-            `Error al obtener las citas: ${response.status}`
+              `Error al obtener las citas: ${response.status}`
           );
         }
 
@@ -44,8 +45,34 @@ export function UserAppointments({ userId }) {
       }
     };
 
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:5000/api/v1/services/`, {
+          headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message ||
+              `Error al obtener los servicios: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        setServices(data);
+      } catch (err) {
+        console.error("Error al cargar servicios:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (userId) {
       fetchAppointments();
+      fetchServices();
     } else {
       setAppointments([]); // Limpia las citas si no hay usuario
       setAppointments([]);
@@ -54,22 +81,27 @@ export function UserAppointments({ userId }) {
   }, [userId]);
 
   const handleDelete = async (id, userId) => {
-    const confirmDelete = window.confirm("¿Estás seguro de que quieres cancelar esta cita?");
+    const confirmDelete = window.confirm(
+      "¿Estás seguro de que quieres cancelar esta cita?"
+    );
     if (!confirmDelete) return;
     try {
       const userData = JSON.parse(localStorage.getItem("user"));
       if (!userData || !userData.token) {
         throw new Error("No hay sesión activa");
       }
-  
-      const response = await fetch(`http://localhost:5000/api/v1/appointments/${id}/${userId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${userData.token}`,
-          "Content-Type": "application/json",
-        },
-      });
-  
+
+      const response = await fetch(
+        `http://localhost:5003/api/v1/appointments/${id}/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${userData.token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       // Add more detailed error handling
       if (!response.ok) {
         // Try to parse error response, but handle cases where it might not be JSON
@@ -81,13 +113,13 @@ export function UserAppointments({ userId }) {
         } catch (parseError) {
           console.error("Could not parse error response", parseError);
         }
-  
+
         throw new Error(errorMessage);
       }
-  
+
       // Check if response is empty before trying to parse
       const data = response.status !== 204 ? await response.json() : {};
-      
+
       setAppointments((prev) => prev.filter((appt) => appt.id !== id));
       alert("Cita cancelada exitosamente.");
     } catch (error) {
@@ -127,25 +159,56 @@ export function UserAppointments({ userId }) {
               <div className="flex justify-between items-start">
                 <div>
                   <div className="font-semibold font-medium text-gray-800">
-                    {appointment.servicioId || "Servicio no especificado"}
+                    {
+                      services.find(
+                        (service) => service.id === appointment.servicioId
+                      )?.nombre
+                    }
                   </div>
-                  <div className="text-sm text-gray-600 flex items-center mt-1">
+                  {/* <div className="text-sm text-gray-600 flex items-center mt-1">
                     <Calendar className="mr-2 text-gray-400" size={16} />
                     {appointment.fecha}
+                  </div> */}
+                  <div className="text-sm text-gray-600 flex items-center mt-1">
+                    <Calendar className="mr-2 text-gray-400" size={16} />
+                    {/* Formatear la fecha */}
+                    {new Date(appointment.fecha).toLocaleDateString("es-ES", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
                   </div>
-                  {appointment.hora && (
+                  <div className="text-sm text-gray-600 flex items-center mt-1">
+                    <Clock className="mr-2 text-gray-400" size={16} />
+                    {/* Formatear la hora */}
+                    {new Date(appointment.fecha).toLocaleTimeString("es-ES", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                  {/* {appointment.hora && (
                     <div className="text-sm text-gray-600 flex items-center mt-1">
                       <Clock className="mr-2 text-gray-400" size={16} />
                       {appointment.hora}
                     </div>
-                  )}
-                  <span className={`
+                  )} */}
+                  <span
+                    className={`
                     inline-block mt-2 px-2 py-1 rounded-full text-xs font-medium
-                    ${appointment.estado === 'Pendiente'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-green-100 text-green-800'
+                    ${
+                      appointment.estado === "Pendiente"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : appointment.estado === "Confirmada"
+                        ? "bg-blue-100 text-blue-800"
+                        : appointment.estado === "Completada"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
                     }
-                  `}>
+
+                    
+                  `}
+                  >
                     {appointment.estado}
                   </span>
                 </div>

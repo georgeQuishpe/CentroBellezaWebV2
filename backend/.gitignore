@@ -29,4 +29,32 @@ dist/
 package-lock.json
 yarn.lock
 backend/.env
+
+# Evita node_modules (muy importante)
+node_modules/
+
+# Archivos de dependencias bloqueadas
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Archivos de logs y temporales
+npm-debug.log*
+yarn-error.log
+lerna-debug.log
+.pnpm-debug.log*
+
+# Configuración de entorno
+.env
+.env.local
+.env.development.local
+.env.production.local
+
+# Archivos de compilación y caché
+dist/
+build/
+.cache/
+.DS_Store
+.idea/
 .vscode/
+

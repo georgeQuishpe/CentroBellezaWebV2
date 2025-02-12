@@ -1,9 +1,13 @@
 // ms-services
 const express = require('express');
 const cors = require('cors');
-const routerApi = require('./routes');
+const router = express.Router();
+const servicesRouter = require('./routes/services.routes');
+const metricsMiddleware = require('./services/monitoring');
+
 
 const app = express();
+app.use(metricsMiddleware);
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -11,7 +15,7 @@ const ALLOWED_ORIGINS = [
   "http://localhost:5000",
   "http://ms-auth:5000",
   "http://ms-services:5000",
-  "http://ms-appointments:5000", 
+  "http://ms-appointments:5000",
   "http://ms-messages:5000",
 
 ];
@@ -35,6 +39,13 @@ app.get('/ms-services', (req, res) => {
   res.send('Conexión exitosa con el Service services!');
 });
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
+
 // Manejo de errores para Express
 app.use((err, req, res, next) => {
   console.error('Error en el Service services:', err);
@@ -44,7 +55,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-routerApi(app);
+app.use('/api/v1', router);
+router.use('/services', servicesRouter);
 
 const port = process.env.PORT_SERVICES || 5002;
 // Inicio del servidor con manejo de errores

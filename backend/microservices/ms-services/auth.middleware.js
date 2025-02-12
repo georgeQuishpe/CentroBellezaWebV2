@@ -13,7 +13,7 @@ function authMiddleware(req, res, next) {
     const token = authHeader.split(' ')[1];
 
     try {
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'tu_clave_secreta');
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'una_clave_secreta_muy_larga_y_segura');
 
         // Asegurarse de que el token contiene la información necesaria
         if (!decodedToken.sub || !decodedToken.rol) {

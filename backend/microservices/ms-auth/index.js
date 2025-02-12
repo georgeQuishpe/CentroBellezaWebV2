@@ -2,8 +2,10 @@
 const express = require('express');
 const cors = require('cors');
 const routerApi = require('./routes');
+const metricsMiddleware = require('./services/monitoring');
 
 const app = express();
+app.use(metricsMiddleware);
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -11,7 +13,7 @@ const ALLOWED_ORIGINS = [
   "http://localhost:5000",
   "http://ms-auth:5000",
   "http://ms-services:5000",
-  "http://ms-appointments:5000", 
+  "http://ms-appointments:5000",
   "http://ms-messages:5000",
 
 ];

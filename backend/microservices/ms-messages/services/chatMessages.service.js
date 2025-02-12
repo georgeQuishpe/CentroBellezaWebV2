@@ -20,21 +20,42 @@ class ChatMessagesService {
         }
     }
 
+
+
     async verifyUserExists(userId) {
         const cleanId = this.cleanUserId(userId);
         const user = await this.getUserById(cleanId);
         return !!user;
     }
 
-    async find(userId) {
+    // async find(userId) {
+    //     if (!userId) return [];
+    //     const cleanId = this.cleanUserId(userId);
+    //     const user = await this.getUserById(cleanId);
+    //     if (!user) return [];
+    //     return await this.repository.findByUser(cleanId);
+    // }
+
+    async findByUser(userId) {
         if (!userId) return [];
         const cleanId = this.cleanUserId(userId);
-        const user = await this.getUserById(cleanId);
-        if (!user) return [];
         return await this.repository.findByUser(cleanId);
     }
 
+    async findAdminUser() {
+        try {
+            // Llamada al microservicio de autenticación para obtener un admin
+            const response = await axios.get('http://ms-auth:5001/api/v1/users/admin');
+            return response.data;
+        } catch (error) {
+            console.error('Error al buscar admin:', error);
+            throw error;
+        }
+    }
+
     async create(data) {
+        console.log('Creando mensaje:', data);
+
         const messageData = {
             usuarioId: this.cleanUserId(data.usuarioId),
             mensaje: data.mensaje,
@@ -43,14 +64,15 @@ class ChatMessagesService {
             leido: false
         };
 
-        const [senderExists, recipientExists] = await Promise.all([
-            this.verifyUserExists(messageData.usuarioId),
-            messageData.toUserId ? this.verifyUserExists(messageData.toUserId) : Promise.resolve(true)
-        ]);
+        // const [senderExists, recipientExists] = await Promise.all([
+        //     this.verifyUserExists(messageData.usuarioId),
+        //     messageData.toUserId ? this.verifyUserExists(messageData.toUserId) : Promise.resolve(true)
+        // ]);
 
-        if (!senderExists || (messageData.toUserId && !recipientExists)) {
-            throw new Error(`Usuario no encontrado`);
-        }
+        // if (!senderExists || (messageData.toUserId && !recipientExists)) {
+        //     throw new Error(`Usuario no encontrado`);
+        // }
+        console.log('Datos procesados:', messageData);
 
         return await this.repository.create(messageData);
     }

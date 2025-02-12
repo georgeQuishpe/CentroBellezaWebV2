@@ -1,4 +1,4 @@
-const ChatMessagesService = require('../services/chatMessages.service.js');
+const ChatMessagesService = require('../services/chatMessages.service');
 const service = new ChatMessagesService();
 
 module.exports = (io) => {
@@ -12,7 +12,10 @@ module.exports = (io) => {
 
     io.on('connection', async (socket) => {
         const userId = socket.handshake.query.userId;
-        const isAdmin = socket.handshake.query.isAdmin === 'true';
+        // const isAdmin = socket.handshake.query.isAdmin === 'true';
+        const isAdmin = socket.handshake.query.isAdmin === 'true' &&
+            socket.user?.rol === 'Admin';
+        console.log('Conectando usuario:', { userId, isAdmin }); // Para debug
 
         console.log(`Nueva conexión - Usuario ID: ${userId}, Admin: ${isAdmin}`);
 
@@ -32,10 +35,12 @@ module.exports = (io) => {
         }
 
         connectedUsers.set(userId, socket.id);
+
         if (isAdmin) {
             adminSockets.add(socket.id);
             try {
                 const chats = await service.findAllChats();
+                console.log('Enviando chats activos al admin:', chats);
                 socket.emit('activeChats', chats);
                 console.log(`Chats enviados al admin ${actualUserId}`);
             } catch (error) {
@@ -53,44 +58,90 @@ module.exports = (io) => {
         }
 
         socket.on('sendMessage', async (messageData) => {
+            console.log('Mensaje recibido en servidor:', {
+                messageData,
+                connectedUsers: Array.from(connectedUsers.entries()),
+                adminSockets: Array.from(adminSockets)
+            });
             try {
                 console.log('Mensaje recibido:', messageData);
 
                 // Si el mensaje es para un admin, buscar un admin en la base de datos
                 let actualToUserId = messageData.toUserId;
-                if (messageData.toUserId === 'admin') {
-                    const adminUser = await service.findAdminUser(); // Necesitamos añadir este método
-                    if (!adminUser) {
-                        throw new Error('No se encontró un administrador disponible');
-                    }
-                    actualToUserId = adminUser.id;
-                }
 
+
+                // if (messageData.toUserId === 'admin') {
+                //     const adminUser = await service.findAdminUser(); // Necesitamos añadir este método
+                //     if (!adminUser) {
+                //         throw new Error('No se encontró un administrador disponible');
+                //     }
+                //     actualToUserId = adminUser.id;
+                // }
+
+                // const newMessage = await service.create({
+                //     usuarioId: messageData.userId,
+                //     mensaje: messageData.content,
+                //     // toUserId: actualToUserId,
+                //     toUserId: 'admin',  // Cliente siempre envía al admin
+                //     fechaEnvio: new Date()
+                // });
                 const newMessage = await service.create({
-                    usuarioId: messageData.userId,
+                    usuarioId: isAdmin ? `admin_${actualUserId}` : messageData.userId,
                     mensaje: messageData.content,
-                    toUserId: actualToUserId,
-                    fechaEnvio: new Date()
+                    toUserId: isAdmin ? messageData.toUserId : 'admin'
                 });
+                console.log('Mensaje guardado:', newMessage);
 
                 // Notificar al remitente
                 socket.emit('message', newMessage);
                 console.log(`Mensaje enviado al remitente ${messageData.userId}`);
 
                 // Notificar al destinatario
+                // if (isAdmin) {
+                //     const clientSocket = connectedUsers.get(messageData.toUserId);
+                //     if (clientSocket) {
+                //         io.to(clientSocket).emit('message', newMessage);
+                //         console.log(`Mensaje enviado al cliente ${messageData.toUserId}`);
+                //     }
+                // } else {
+                //     // Notificar a todos los admins
+                //     Array.from(adminSockets).forEach(adminSocketId => {
+                //         io.to(adminSocketId).emit('message', newMessage);
+                //     });
+                //     console.log('Mensaje enviado a todos los admins');
+                // }
+
+                // if (messageData.toUserId === 'admin') {
+                //     Array.from(adminSockets).forEach(adminSocketId => {
+                //         io.to(adminSocketId).emit('message', newMessage);
+                //     });
+                //     console.log('Mensaje enviado a todos los admins conectados');
+
+                // } else {
+                //     // Emitir mensaje al destinatario específico
+                //     const recipientSocket = connectedUsers.get(messageData.toUserId);
+                //     if (recipientSocket) {
+                //         io.to(recipientSocket).emit('message', newMessage);
+                //     }
+                // }
+                // // Notificar a los admins
+                // Array.from(adminSockets).forEach(adminSocketId => {
+                //     io.to(adminSocketId).emit('message', newMessage);
+                // });
+
+                // Si es admin, enviar al cliente específico
                 if (isAdmin) {
                     const clientSocket = connectedUsers.get(messageData.toUserId);
                     if (clientSocket) {
                         io.to(clientSocket).emit('message', newMessage);
-                        console.log(`Mensaje enviado al cliente ${messageData.toUserId}`);
                     }
                 } else {
-                    // Notificar a todos los admins
+                    // Si es cliente, enviar a todos los admins
                     Array.from(adminSockets).forEach(adminSocketId => {
                         io.to(adminSocketId).emit('message', newMessage);
                     });
-                    console.log('Mensaje enviado a todos los admins');
                 }
+
             } catch (error) {
                 console.error('Error al enviar mensaje:', error);
                 socket.emit('error', { message: error.message });

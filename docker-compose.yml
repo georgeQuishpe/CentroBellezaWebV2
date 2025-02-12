@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - microservicios-network
+
   ms-auth:
     build: ./backend/microservices/ms-auth
     container_name: ms-auth
@@ -10,11 +20,13 @@ services:
       db-auth:
         condition: service_healthy
     environment:
+      JWT_SECRET: una_clave_secreta_muy_larga_y_segura
       DB_HOST: db-auth
       DB_USER: postgres
       DB_PASSWORD: "ProyectoWenAvanzadasIIB"
       DB_NAME: auth_db
       DB_PORT: 5432
+      
     networks:
       - microservicios-network
     healthcheck:
@@ -94,6 +106,9 @@ services:
       - "5003:5000"
     depends_on:
       db-appointments:
+        condition: service_healthy
+        # Lo puse ahorita
+      db-messages:
         condition: service_healthy
     environment:
       DB_HOST: db-appointments
