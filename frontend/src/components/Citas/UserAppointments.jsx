@@ -21,7 +21,7 @@ export function UserAppointments({ userId }) {
       try {
         setLoading(true);
         const response = await fetch(
-          `http://localhost:5003/api/v1/appointments/user/${userId}`,
+          `http://localhost:5003/api/v1/appointments/user/${userId}?limit=20`,
           {
             headers: getAuthHeaders(),
           }

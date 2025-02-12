@@ -28,6 +28,7 @@ const ALLOWED_ORIGINS = [
 
 const io = new Server(httpServer, {
   path: '/ms-messages/socket.io',
+  maxHttpBufferSize: 1e6, // 1MB max message size
   cors: {
     origin: ALLOWED_ORIGINS,
     methods: ["GET", "POST"],
@@ -43,7 +44,12 @@ const io = new Server(httpServer, {
   reconnection: true,
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
-  reconnectionDelayMax: 5000
+  reconnectionDelayMax: 5000,
+  maxPayload: 1048576, // 1MB in bytes
+  perMessageDeflate: {
+    threshold: 1024, // only compress data if size > 1KB
+    maxPayload: 1048576
+  }
 });
 
 app.use(cors({
@@ -70,7 +76,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('error', (error) => {
-    console.error('Error en socket:', socket.id, error);
+    if (error.name === 'RangeError') {
+      console.error('Buffer allocation failed:', error);
+      socket.emit('error', 'Message size too large');
+    } else {
+      console.error('Socket error:', error);
+    }
   });
 });
 
