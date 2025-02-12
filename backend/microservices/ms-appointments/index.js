@@ -2,9 +2,11 @@
 const express = require('express');
 const cors = require('cors');
 const router = express.Router();
+const metricsMiddleware = require('./services/monitoring');
 const appointmentsRouter = require('./routes/appointments.routes');
 
 const app = express();
+app.use(metricsMiddleware);
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",

@@ -6,8 +6,10 @@ const { Server } = require('socket.io');
 const router = express.Router();
 const chatMessagesRouter = require('./routes/chatMessages.routes');
 const exp = require('constants');
+const metricsMiddleware = require('./services/monitoring');
 
 const app = express();
+app.use(metricsMiddleware);
 const httpServer = createServer(app);
 
 const ALLOWED_ORIGINS = [
