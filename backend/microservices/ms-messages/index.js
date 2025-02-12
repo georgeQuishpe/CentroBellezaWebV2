@@ -5,8 +5,8 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const router = express.Router();
 const chatMessagesRouter = require('./routes/chatMessages.routes');
-const exp = require('constants');
 const metricsMiddleware = require('./services/monitoring');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(metricsMiddleware);
@@ -104,6 +104,29 @@ router.use('/chat-messages', chatMessagesRouter);
 
 const port = process.env.PORT_MESSAGES || 5004;
 const host = '0.0.0.0';
+
+// Middleware de autenticación para Socket.IO
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+    if (!token) {
+      return next(new Error('Authentication error: Token not provided'));
+    }
+
+    console.log('JWT Secret usado para verificación:', config.jwtSecret); // Para debug
+    const decoded = jwt.verify(token, config.jwtSecret);
+    socket.user = decoded;
+    console.log('Token verificado correctamente:', decoded);
+    next();
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return next(new Error('Token expired'));
+    }
+    console.error('Error de autenticación:', err);
+    return next(new Error('Authentication error: ' + err.message));
+  }
+});
+
 
 // Inicio del servidor con manejo de errores
 httpServer.listen(port, host, () => {
