@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-const routerApi = require('./routes');
+// const routerApi = require('./routes');
 const { config } = require('./config/config');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
@@ -47,7 +47,7 @@ const io = new Server(httpServer, {
 });
 
 app.use(cors({
-  origin: ALLOWED_ORIGINS,
+  // origin: ALLOWED_ORIGINS,
   origin: function (origin, callback) {
     if (!origin || ALLOWED_ORIGINS.indexOf(origin) !== -1) {
       callback(null, true);

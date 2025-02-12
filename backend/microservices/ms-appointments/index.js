@@ -5,11 +5,11 @@ const router = express.Router();
 const metricsMiddleware = require('./services/monitoring');
 const appointmentsRouter = require('./routes/appointments.routes');
 
-// Import routes
-const chatMessagesRoutes = require('./chatMessages.routes');
+// // Import routes
+// const chatMessagesRoutes = require('./chatMessages.routes');
 
-// Configure routes
-router.use('/chat-messages', chatMessagesRoutes);
+// // Configure routes
+// router.use('/chat-messages', chatMessagesRoutes);
 
 const app = express();
 app.use(metricsMiddleware);
