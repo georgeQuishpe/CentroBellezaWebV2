@@ -30,6 +30,10 @@ export default function LoginPage() {
         throw new Error(data.message || 'Error al iniciar sesión')
       }
 
+      if (!data.user || !data.token) {
+        throw new Error('Respuesta de login inválida');
+      }
+
       // Guardar token
       if (data.token) {
         localStorage.setItem('token', data.token);

@@ -32,10 +32,14 @@ class AuthService {
             }
 
             console.log('Usuario encontrado:', user.email, 'Rol:', user.rol); // Añade este log
+
             const isPasswordValid = await bcrypt.compare(password, user.password);
             if (!isPasswordValid) {
                 throw new Error('Contraseña incorrecta');
             }
+
+            const token = this.generateToken(user);
+
 
             return {
                 user: {
@@ -44,7 +48,8 @@ class AuthService {
                     rol: user.rol,
                     nombre: user.nombre
                 },
-                token: this.generateToken(user)
+                // token: this.generateToken(user)
+                token
             };
         } catch (error) {
             console.error('Error en login:', error);
