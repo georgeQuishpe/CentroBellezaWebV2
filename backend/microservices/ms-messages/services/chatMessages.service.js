@@ -1,5 +1,6 @@
 const axios = require('axios');
 const ChatMessageRepository = require('../repositories/chatMessage.repository');
+const service = new ChatMessagesService(); // Asegúrate que la instancia se crea correctamente
 
 class ChatMessagesService {
     constructor() {
@@ -61,6 +62,21 @@ class ChatMessagesService {
 
     async findAllChats() {
         return await this.repository.findAllChats();
+    }
+
+    async findByUser(userId) {
+        if (!userId) return [];
+
+        try {
+            const cleanId = this.cleanUserId(userId);
+            const user = await this.getUserById(cleanId);
+            if (!user) return [];
+
+            return await this.repository.findByUser(cleanId);
+        } catch (error) {
+            console.error('Error en findByUser:', error);
+            return [];
+        }
     }
 }
 

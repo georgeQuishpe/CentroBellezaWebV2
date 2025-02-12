@@ -3,10 +3,12 @@ const jwt = require('jsonwebtoken'); // Añade esta importación
 const { sendEmail } = require('./mailer.service');
 const UserService = require('./users.service');
 const service = new UserService();
+// const service = new ChatMessagesService(); // Asegúrate que la instancia se crea correctamente
+
 
 class AuthService {
     constructor() {
-        this.jwtSecret = process.env.JWT_SECRET || 'tu_clave_secreta'; // Idealmente en variables de entorno
+        this.jwtSecret = process.env.JWT_SECRET || 'una_clave_secreta_muy_larga_y_segura'; // Idealmente en variables de entorno
     }
 
     async login(email, password) {

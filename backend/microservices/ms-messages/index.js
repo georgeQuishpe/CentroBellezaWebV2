@@ -7,6 +7,7 @@ const router = express.Router();
 const chatMessagesRouter = require('./routes/chatMessages.routes');
 const metricsMiddleware = require('./services/monitoring');
 const jwt = require('jsonwebtoken');
+const { config } = require('./config/config'); // Añade esta línea
 
 const app = express();
 app.use(metricsMiddleware);
@@ -114,8 +115,13 @@ io.use((socket, next) => {
       return next(new Error('Authentication error: Token not provided'));
     }
 
-    console.log('JWT Secret usado para verificación:', config.jwtSecret); // Para debug
-    const decoded = jwt.verify(token, config.jwtSecret);
+    const jwtSecret = process.env.JWT_SECRET || 'una_clave_secreta_muy_larga_y_segura';
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET no está configurado');
+    }
+
+    console.log('JWT Secret usado para verificación:', jwtSecret); // Para debug
+    const decoded = jwt.verify(token, jwtSecret);
     socket.user = decoded;
     console.log('Token verificado correctamente:', decoded);
     next();

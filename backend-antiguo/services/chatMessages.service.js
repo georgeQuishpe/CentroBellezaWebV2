@@ -2,12 +2,15 @@ const { models } = require('../libs/sequelize');
 const { Op } = require('sequelize'); // Asegúrate de importar 
 const { User } = require('../db/models/users.model'); // Importa el modelo User
 const { sequelize } = require('../libs/sequelize.js');
-
+const axios = require('axios');
+const ChatMessageRepository = require('../repositories/chatMessage.repository');
 
 class ChatMessagesService {
     constructor() {
         // Si necesitas acceder a los modelos en el constructor
         this.models = models;
+        this.repository = new ChatMessageRepository();
+
     }
 
     cleanUserId(userId) {
@@ -25,6 +28,8 @@ class ChatMessagesService {
         if (!userId) return [];
 
         const cleanId = this.cleanUserId(userId);
+
+
 
         return await models.ChatMessage.findAll({
             where: {
@@ -44,6 +49,7 @@ class ChatMessagesService {
                     model: models.User,
                     as: 'destinatario',
                     attributes: ['id', 'nombre', 'email'],
+
                 },
             ],
         });
@@ -99,11 +105,30 @@ class ChatMessagesService {
         }
     }
 
+    async getUserById(userId) {
+        try {
+            const response = await axios.get(`http://host.docker.internal:5001/api/v1/users/${userId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error al obtener el usuario:', error.message);
+            return null;
+        }
+    }
+
     async findByUser(userId) {
         if (!userId) return [];
 
-        const cleanId = this.cleanUserId(userId);
+        // const cleanId = this.cleanUserId(userId);
+        try {
+            const cleanId = this.cleanUserId(userId);
+            const user = await this.getUserById(cleanId);
+            if (!user) return [];
 
+            return await this.repository.findByUser(cleanId);
+        } catch (error) {
+            console.error('Error en findByUser:', error);
+            return [];
+        }
         return await models.ChatMessage.findAll({
             where: {
                 [Op.or]: [
@@ -186,5 +211,8 @@ class ChatMessagesService {
 
 
 }
+
+// Move the instance creation after the class definition
+const service = new ChatMessagesService();
 
 module.exports = ChatMessagesService;

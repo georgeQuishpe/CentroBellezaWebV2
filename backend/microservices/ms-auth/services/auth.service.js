@@ -5,7 +5,7 @@ const UsersService = require('./users.service');
 
 class AuthService {
     constructor() {
-        this.jwtSecret = process.env.JWT_SECRET || 'tu_clave_secreta';
+        this.jwtSecret = process.env.JWT_SECRET || 'una_clave_secreta_muy_larga_y_segura';
         this.usersService = new UsersService();
     }
 
