@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - microservicios-network
+
   ms-auth:
     build: ./backend/microservices/ms-auth
     container_name: ms-auth

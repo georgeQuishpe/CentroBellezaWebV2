@@ -1,9 +1,13 @@
 // ms-services
 const express = require('express');
 const cors = require('cors');
-const routerApi = require('./routes');
+const router = express.Router();
+const servicesRouter = require('./routes/services.routes');
+const metricsMiddleware = require('./services/monitoring');
+
 
 const app = express();
+app.use(metricsMiddleware);
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",
@@ -51,7 +55,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-routerApi(app);
+app.use('/api/v1', router);
+router.use('/services', servicesRouter);
 
 const port = process.env.PORT_SERVICES || 5002;
 // Inicio del servidor con manejo de errores

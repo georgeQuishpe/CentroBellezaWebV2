@@ -1,10 +1,10 @@
-const { models } = require('../libs/sequelize');
+const ChatMessage = require('../models/chatMessage.model');
 const { Op } = require('sequelize');
-const { sequelize } = require('../libs/sequelize.js');
+const { sequelize } = require('../libs/sequelize');
 
 class ChatMessageRepository {
     async findByUser(userId) {
-        return await models.ChatMessage.findAll({
+        return await ChatMessage.findAll({
             where: {
                 [Op.or]: [{ usuarioId: userId }, { toUserId: userId }]
             },
@@ -13,15 +13,15 @@ class ChatMessageRepository {
     }
 
     async create(messageData) {
-        return await models.ChatMessage.create(messageData);
+        return await ChatMessage.create(messageData);
     }
 
     async findById(id) {
-        return await models.ChatMessage.findByPk(id);
+        return await ChatMessage.findByPk(id);
     }
 
     async markAsRead(id) {
-        const message = await models.ChatMessage.findByPk(id);
+        const message = await ChatMessage.findByPk(id);
         if (!message) throw new Error('Mensaje no encontrado');
         return await message.update({ leido: true });
     }

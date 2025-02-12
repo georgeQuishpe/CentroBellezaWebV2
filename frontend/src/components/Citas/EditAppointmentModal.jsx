@@ -114,7 +114,7 @@ export function EditAppointmentModal({
               >
                 {services.map((service) => (
                   <option key={service.id} value={service.id}>
-                    {service.nombre}
+                    {service.id}
                   </option>
                 ))}
               </select>

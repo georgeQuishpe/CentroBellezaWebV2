@@ -4,6 +4,7 @@ import { Clock, Calendar, X } from "lucide-react";
 
 export function UserAppointments({ userId }) {
   const [appointments, setAppointments] = useState([]);
+  const [services, setServices] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,8 +45,34 @@ export function UserAppointments({ userId }) {
       }
     };
 
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:5000/api/v1/services/`, {
+          headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message ||
+              `Error al obtener los servicios: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        setServices(data);
+      } catch (err) {
+        console.error("Error al cargar servicios:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (userId) {
       fetchAppointments();
+      fetchServices();
     } else {
       setAppointments([]); // Limpia las citas si no hay usuario
       setAppointments([]);
@@ -134,9 +161,15 @@ export function UserAppointments({ userId }) {
                   {/* <div className="font-semibold font-medium text-gray-800">
                     {appointment.servicioId || "Servicio no especificado"}
                   </div> */}
+                  {/* <div className="font-semibold font-medium text-gray-800">
+                    
+                    {appointment.servicio?.nombre || "Servicio no especificado"} */}
                   <div className="font-semibold font-medium text-gray-800">
-                    {/* Mostrar el nombre del servicio en lugar del ID */}
-                    {appointment.servicio?.nombre || "Servicio no especificado"}
+                    {
+                      services.find(
+                        (service) => service.id === appointment.servicioId
+                      )?.nombre
+                    }
                   </div>
                   <div className="text-sm text-gray-600 mt-1">
                     {/* Mostrar el precio y duración */}$ $
