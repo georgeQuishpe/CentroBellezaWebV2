@@ -14,6 +14,17 @@ export const useWebSocket = (userId, isAdmin = false) => {
     const isMounted = useRef(true); // Bandera para evitar actualizaciones después del desmontaje
 
     useEffect(() => {
+
+        // Obtener el token del localStorage
+        const userData = localStorage.getItem('user');
+        const token = userData ? JSON.parse(userData).token : null;
+
+        if (!token) {
+            console.error('No hay token disponible');
+            return;
+        }
+
+
         // Limpiar cualquier conexión existente
         if (socketRef.current) {
             socketRef.current.disconnect();

@@ -110,6 +110,7 @@ io.use((socket, next) => {
   try {
     const token = socket.handshake.auth.token;
     if (!token) {
+      console.log('No se proporcionó token de autenticación');
       return next(new Error('Authentication error: Token not provided'));
     }
 
