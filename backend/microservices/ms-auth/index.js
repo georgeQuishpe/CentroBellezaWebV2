@@ -2,8 +2,10 @@
 const express = require('express');
 const cors = require('cors');
 const routerApi = require('./routes');
+const metricsMiddleware = require('./services/monitoring');
 
 const app = express();
+app.use(metricsMiddleware);
 
 const ALLOWED_ORIGINS = [
   "http://localhost:3000",

@@ -1,9 +1,7 @@
-const AppointmentsRepository = require('../repositories/appointments.repository');
+const AppointmentsRepository = require('../repositories/appointment.repository');
 const { models } = require('../libs/sequelize');
 const axios = require('axios');
 const SERVICES_URL = process.env.SERVICES_URL || 'http://ms-services:5002';
-
-
 
 class AppointmentsService {
     constructor() { }

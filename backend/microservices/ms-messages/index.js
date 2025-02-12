@@ -5,9 +5,13 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const routerApi = require('./routes');
 const { config } = require('./config/config');
+const router = express.Router();
+const chatMessagesRouter = require('./routes/chatMessages.routes');
+const metricsMiddleware = require('./services/monitoring');
 const jwt = require('jsonwebtoken');
 
 const app = express();
+app.use(metricsMiddleware);
 const httpServer = createServer(app);
 
 const ALLOWED_ORIGINS = [
@@ -97,7 +101,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-routerApi(app);
+app.use('/api/v1', router);
+router.use('/chat-messages', chatMessagesRouter);
 
 const port = process.env.PORT_MESSAGES || 5004;
 const host = '0.0.0.0';

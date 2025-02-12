@@ -552,6 +552,7 @@ export default function AdminDashboard() {
 function AppointmentManager() {
     const [appointments, setAppointments] = useState([]);
     const [services, setServices] = useState([]);
+    const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingAppointment, setEditingAppointment] = useState(null);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -573,7 +574,21 @@ function AppointmentManager() {
     useEffect(() => {
         fetchAppointments();
         fetchServices();
+        fetchUsers();
     }, []);
+
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch("http://localhost:5000/api/v1/users/", {
+                headers: getAuthHeaders()
+            });
+            if (!response.ok) throw new Error('Error al cargar usuarios');
+            const data = await response.json();
+            setUsers(data);
+        } catch (error) {
+            console.error('Error al cargar usuarios:', error);
+        }
+    };
 
     const showConfirmation = (title, message, onConfirm) => {
         setConfirmationModal({
@@ -709,10 +724,10 @@ function AppointmentManager() {
                             {appointments.map((appointment) => (
                                 <tr key={appointment.id}>
                                     <td className="text-black px-6 py-4 whitespace-nowrap">
-                                        {appointment.usuario?.nombre}
+                                        {users.find(u => u.id === appointment.usuarioId)?.nombre}
                                     </td>
                                     <td className="text-black px-6 py-4 whitespace-nowrap">
-                                        {appointment.servicio?.nombre}
+                                        {services.find(s => s.id === appointment.servicioId)?.nombre}
                                     </td>
                                     <td className="text-black px-6 py-4 whitespace-nowrap">
                                         {new Date(appointment.fecha).toLocaleString()}
