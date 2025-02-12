@@ -17,7 +17,7 @@ const ALLOWED_ORIGINS = [
   "http://ms-services:5000",
   "http://ms-appointments:5000",
   "http://ms-messages:5000",
-
+  "https://centro-belleza-web-v2-d8ww7ii17-george-quishpes-projects.vercel.app/"
 ];
 
 app.use(cors({

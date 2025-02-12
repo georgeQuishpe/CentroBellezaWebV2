@@ -5,6 +5,10 @@ module.exports = (io) => {
     const connectedUsers = new Map();
     const adminSockets = new Set();
 
+
+    console.log('Admin sockets:', Array.from(adminSockets));
+    console.log('Connected users:', Array.from(connectedUsers.entries()));
+
     setInterval(() => {
         console.log('Usuarios conectados:', connectedUsers.size);
         console.log('Admins conectados:', adminSockets.size);
